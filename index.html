@@ -924,6 +924,790 @@ g++ main.cpp -o backend -lmysqlclient     # ou -lmysqlclient`},
 // ...
 #endif`},
 ],note:"Lis l'erreur <b>du haut vers le bas</b> : la première erreur cause souvent toutes les suivantes. Corrige-la d'abord et recompile."},
+
+/* ================= LINUX (cas & problèmes) ================= */
+{id:"lx6",cat:"linux",title:"Gérer les paquets avec apt",badge:"apt",summary:"Installer, rechercher, mettre à jour et nettoyer.",tags:["apt","install","update","upgrade","paquet"],steps:[
+  {t:"Rafraîchir puis mettre à jour.",code:`sudo apt update          # rafraîchit la liste
+sudo apt upgrade -y      # installe les nouvelles versions`},
+  {t:"Installer, rechercher, supprimer.",code:`sudo apt install nom-du-paquet
+apt search mot-cle
+sudo apt purge nom-du-paquet   # + fichiers de conf`},
+  {t:"Nettoyer.",code:`sudo apt autoremove
+sudo apt clean`},
+],note:"<b>apt update</b> rafraîchit l'index, <b>apt upgrade</b> installe : les deux sont complémentaires."},
+
+{id:"lx7",cat:"linux",title:"Utilisateurs, groupes et sudo",badge:"comptes",summary:"Créer des comptes et accorder les droits admin.",tags:["adduser","sudo","usermod","groupes","passwd"],steps:[
+  {t:"Créer un utilisateur.",code:`sudo adduser eleve
+sudo passwd eleve`},
+  {t:"Donner les droits sudo.",code:`sudo usermod -aG sudo eleve
+groups eleve`},
+],note:"<b>-aG</b> ajoute au groupe sans retirer les autres : oublier le <code>-a</code> écrase les groupes existants."},
+
+{id:"lx8",cat:"linux",title:"Planifier des tâches (cron)",badge:"cron",summary:"Automatiser sauvegardes et scripts.",tags:["cron","crontab","tâche","planification","automatisation"],steps:[
+  {t:"Éditer et lister.",code:`crontab -e
+crontab -l`},
+  {t:"Syntaxe (min heure jour mois jour-semaine).",code:`*/5 * * * *  /opt/scripts/sauvegarde.sh   # toutes les 5 min
+0 2 * * *    /opt/scripts/dump_mysql.sh    # chaque jour 2h`},
+],note:"Les chemins dans cron doivent être <b>absolus</b> : l'environnement est minimal, le PATH n'est pas celui du shell."},
+
+{id:"lx9",cat:"linux",title:"Surveiller disque, mémoire et charge",badge:"monitoring",summary:"Repérer un disque plein ou une machine saturée.",tags:["df","du","free","top","disque"],steps:[
+  {t:"Disque.",code:`df -h
+du -sh /var/*
+lsblk`},
+  {t:"Mémoire et charge.",code:`free -h
+uptime
+top    # q pour quitter`},
+],note:"Un service qui refuse de démarrer est parfois juste un <b>disque plein</b> : pense à <code>df -h</code>."},
+
+{id:"lx10",cat:"linux",title:"Archiver et transférer des fichiers",badge:"transfert",summary:"Compresser, copier, synchroniser.",tags:["tar","scp","rsync","archive","backup"],steps:[
+  {t:"Compresser / décompresser.",code:`tar -czf sauvegarde.tar.gz /var/www
+tar -xzf sauvegarde.tar.gz`},
+  {t:"Copier vers un serveur (SSH).",code:`scp fichier.sql eleve@192.168.1.50:/home/eleve/
+rsync -av /var/www/ eleve@192.168.1.50:/var/www/`},
+],note:"<b>rsync</b> ne transfère que les différences : idéal pour des copies répétées."},
+
+{id:"lx11",cat:"linux",title:"Variables d'environnement et alias",badge:"shell",summary:"Personnaliser le shell durablement.",tags:["export","path","bashrc","alias","environnement"],steps:[
+  {t:"Afficher / définir.",code:`echo $PATH
+export MA_VAR="valeur"
+printenv`},
+  {t:"Alias permanent.",code:`echo "alias ll='ls -la'" >> ~/.bashrc
+source ~/.bashrc`},
+],note:"<b>~/.bashrc</b> est lu à chaque terminal : c'est là qu'on met alias et variables persistantes."},
+
+{id:"lx12",cat:"linux",title:"Rechercher du texte et des fichiers",badge:"recherche",summary:"grep et find pour retrouver vite une config.",tags:["grep","find","recherche","fichier","locate"],steps:[
+  {t:"Texte dans des fichiers.",code:`grep -rn "ServerName" /etc/apache2/
+grep -i "error" /var/log/apache2/error.log`},
+  {t:"Trouver des fichiers.",code:`find /var/www -name "*.php"
+find / -size +100M 2>/dev/null`},
+],note:"<code>grep -rn</code> affiche fichier ET numéro de ligne : parfait pour localiser une directive."},
+
+{id:"lx13",cat:"linux",title:"Permissions et propriété",badge:"droits",summary:"chmod numérique, chown récursif.",tags:["chmod","chown","permissions","umask","droits"],steps:[
+  {t:"Notation numérique (rwx = 4+2+1).",code:`chmod 644 fichier.php     # rw- r-- r--
+chmod 755 script.sh       # rwx r-x r-x
+chmod 600 ~/.ssh/id_ed25519`},
+  {t:"Changer le propriétaire.",code:`sudo chown -R www-data:www-data /var/www/dashboard`},
+],note:"4=lecture, 2=écriture, 1=exécution. 755 dossier/exécutable, 644 fichier, 600 clé privée."},
+
+{id:"lx14",cat:"linux",title:"Activer un service au démarrage",badge:"systemd",summary:"enable / disable / mask.",tags:["systemctl","enable","disable","boot","service"],steps:[
+  {t:"Démarrer maintenant ET au boot.",code:`sudo systemctl enable --now apache2`},
+  {t:"Désactiver / interdire.",code:`sudo systemctl disable apache2
+sudo systemctl mask apache2`},
+],note:"<b>start</b> = maintenant, <b>enable</b> = au démarrage. Pour que tout reparte après reboot, c'est <code>enable</code>."},
+
+{id:"lx15",cat:"linux",title:"Redirections et tubes",badge:"shell",summary:"Rediriger la sortie, chaîner des commandes.",tags:["redirection","pipe","tube","tee","2>&1"],steps:[
+  {t:"Écrire / ajouter dans un fichier.",code:`echo "x" > fichier.txt    # écrase
+echo "x" >> fichier.txt   # ajoute`},
+  {t:"Chaîner et capturer les erreurs.",code:`journalctl -u mosquitto | grep -i error
+commande > sortie.log 2>&1
+commande | tee resultat.txt`},
+],note:"<code>2>&1</code> redirige aussi les erreurs ; <code>|</code> passe la sortie d'une commande à la suivante."},
+
+{id:"lx16",cat:"linux",title:"Gérer les processus",badge:"processus",summary:"Lister, tuer, lancer en arrière-plan.",tags:["ps","kill","nohup","jobs","processus"],steps:[
+  {t:"Voir et arrêter.",code:`ps aux | grep backend
+kill 1234        # TERM (propre)
+kill -9 1234     # forcer (dernier recours)`},
+  {t:"Arrière-plan.",code:`./simulateur.sh &
+nohup ./backend &   # survit à la fermeture du terminal`},
+],note:"Préfère <code>kill</code> (TERM) à <code>kill -9</code> : il laisse le programme se fermer proprement."},
+
+{id:"lx17",cat:"linux",title:"Liens symboliques",badge:"liens",summary:"Créer un raccourci vers un fichier/dossier.",tags:["ln","symbolique","lien","raccourci","linux"],steps:[
+  {t:"Créer un lien.",code:`ln -s /opt/iot-backend/config.ini /etc/iot.ini
+ls -l /etc/iot.ini`},
+],note:"Apache fonctionne ainsi : <code>a2ensite</code> ne fait que créer un lien sites-enabled -> sites-available."},
+
+{id:"lx18",cat:"linux",title:"Monter une clé USB / un disque",badge:"montage",summary:"Accéder à un support externe.",tags:["mount","usb","lsblk","umount","montage"],steps:[
+  {t:"Identifier puis monter.",code:`lsblk
+sudo mkdir -p /mnt/usb
+sudo mount /dev/sdb1 /mnt/usb`},
+  {t:"Démonter.",code:`sudo umount /mnt/usb`},
+],note:"Démonte toujours avant de retirer la clé, sinon des données en cache peuvent être perdues."},
+
+{id:"lx19",cat:"linux",title:"Adressage IP et passerelle",badge:"réseau",summary:"Lire son IP, son masque, sa route.",tags:["ip","masque","passerelle","adressage","réseau"],steps:[
+  {t:"Voir adresses et route.",code:`ip a        # adresses des interfaces
+ip route    # passerelle par défaut`},
+  {t:"Comprendre le /24.",code:`192.168.1.50/24
+# réseau 192.168.1.0 ; machines de .1 à .254`},
+],note:"Le masque détermine qui est « sur le même réseau ». En /24, tout 192.168.1.x se parle directement."},
+
+{id:"lx20",cat:"linux",title:"Donner une IP fixe",badge:"ip fixe",summary:"Netplan (serveur) ou NetworkManager (desktop).",tags:["ip fixe","netplan","nmcli","statique","réseau"],steps:[
+  {t:"Ubuntu Server : Netplan.",code:`sudo nano /etc/netplan/00-installer-config.yaml
+# addresses: [192.168.1.50/24] + routes + nameservers
+sudo netplan apply`},
+  {t:"Ubuntu Desktop : nmcli.",code:`nmcli con mod "filaire" ipv4.method manual ipv4.addresses 192.168.1.50/24 ipv4.gateway 192.168.1.1
+nmcli con up "filaire"`},
+],note:"Un serveur (broker, web, base) doit avoir une <b>IP fixe</b> : les capteurs et clients pointent vers cette adresse."},
+
+{id:"lx21",cat:"linux",title:"Tester la connectivité réseau",badge:"diagnostic",summary:"ping et traceroute pour isoler une panne.",tags:["ping","traceroute","connectivité","dns","réseau"],steps:[
+  {t:"Tester en escalier.",code:`ping 192.168.1.1     # 1. passerelle
+ping 8.8.8.8         # 2. Internet (IP)
+ping google.com      # 3. DNS`},
+  {t:"Chemin réseau.",code:`traceroute 8.8.8.8`},
+],note:"Si 8.8.8.8 répond mais pas google.com, c'est le <b>DNS</b>, pas la connexion : diagnostic en escalier."},
+
+{id:"lx22",cat:"linux",title:"Voir les ports ouverts",badge:"ports",summary:"ss en local, nmap à distance.",tags:["ss","nmap","ports","écoute","réseau"],steps:[
+  {t:"Ports en écoute (local).",code:`sudo ss -tlnp`},
+  {t:"Scanner une machine distante.",code:`nmap -p 1883,3306 192.168.1.50`},
+],note:"<b>ss</b> = ce que MA machine ouvre ; <b>nmap</b> = ce qui est joignable ailleurs. Indispensable pour diagnostiquer un pare-feu."},
+
+{id:"lx23",cat:"linux",title:"SSH et copie de fichiers",badge:"ssh",summary:"Administrer une machine à distance.",tags:["ssh","scp","distant","openssh","réseau"],steps:[
+  {t:"Se connecter et copier.",code:`ssh eleve@192.168.1.50
+scp script.sh eleve@192.168.1.50:/home/eleve/`},
+],note:"Pour accepter les connexions, installe le serveur sur la cible : <code>sudo apt install openssh-server</code>."},
+
+{id:"lx24",cat:"linux",title:"Connexion SSH par clé",badge:"clés",summary:"Se connecter sans mot de passe.",tags:["ssh","clé","ssh-keygen","ssh-copy-id","réseau"],steps:[
+  {t:"Générer et copier la clé.",code:`ssh-keygen -t ed25519
+ssh-copy-id eleve@192.168.1.50`},
+],note:"Les clés sont plus sûres et plus pratiques. La clé <b>privée</b> reste secrète (<code>chmod 600</code>) et ne se partage jamais."},
+
+{id:"lx25",cat:"linux",title:"Pare-feu UFW en détail",badge:"ufw",summary:"Ouvrir, fermer et limiter des ports.",tags:["ufw","pare-feu","allow","deny","limit"],steps:[
+  {t:"Règles de base (SSH d'abord !).",code:`sudo ufw allow 22/tcp
+sudo ufw allow 80,443/tcp
+sudo ufw enable
+sudo ufw status numbered`},
+  {t:"Restreindre / supprimer.",code:`sudo ufw allow from 192.168.1.0/24 to any port 1883
+sudo ufw limit 22/tcp
+sudo ufw delete 3`},
+],note:"Autorise TOUJOURS le SSH (22) AVANT <code>ufw enable</code>, sinon tu te coupes l'accès à une machine distante."},
+
+{id:"lx26",cat:"linux",title:"Noms de machines et /etc/hosts",badge:"hosts",summary:"Associer un nom à une IP localement.",tags:["hosts","hostname","dns","résolution","réseau"],steps:[
+  {t:"Nom de la machine.",code:`hostname
+sudo hostnamectl set-hostname serveur-iot`},
+  {t:"Associer un nom à une IP.",code:`sudo nano /etc/hosts
+# 192.168.1.50   www.dashboard.local`},
+],note:"<code>/etc/hosts</code> résout localement sans DNS : c'est ainsi qu'on joint <code>www.dashboard.local</code> sans Internet."},
+
+{id:"lx27",cat:"linux",title:"Observer le trafic (tcpdump)",badge:"capture",summary:"Voir passer les paquets.",tags:["tcpdump","capture","paquets","réseau","diagnostic"],steps:[
+  {t:"Capturer un port.",code:`sudo tcpdump -i eth0 port 1883 -n`},
+],note:"tcpdump prouve si les paquets arrivent vraiment : utile quand un client « publie » mais que rien n'arrive côté broker."},
+
+{id:"lx28",cat:"linux",title:"Durcir l'accès SSH",badge:"sécurité",summary:"Limiter les connexions au serveur.",tags:["ssh","sshd_config","root","durcissement","sécurité"],steps:[
+  {t:"Modifier la config du serveur SSH.",code:`sudo nano /etc/ssh/sshd_config
+# PermitRootLogin no
+# PasswordAuthentication no    (clés uniquement)
+sudo systemctl restart ssh`},
+],note:"Désactive la connexion root et privilégie les clés. Si tu changes le port, ouvre-le dans UFW <b>avant</b> de redémarrer SSH."},
+
+{id:"lx29",cat:"linux",title:"Bloquer le bruteforce (fail2ban)",badge:"sécurité",summary:"Bannir les IP qui multiplient les échecs.",tags:["fail2ban","bruteforce","ban","ssh","sécurité"],steps:[
+  {t:"Installer et surveiller.",code:`sudo apt install fail2ban
+sudo systemctl enable --now fail2ban
+sudo fail2ban-client status sshd`},
+],note:"fail2ban lit les logs et bannit une IP après trop d'échecs : protection simple contre le bruteforce SSH."},
+
+{id:"lx30",cat:"linux",title:"Mises à jour de sécurité automatiques",badge:"sécurité",summary:"Appliquer les correctifs sans y penser.",tags:["unattended-upgrades","mises à jour","patch","apt","sécurité"],steps:[
+  {t:"Activer.",code:`sudo apt install unattended-upgrades
+sudo dpkg-reconfigure --priority=low unattended-upgrades`},
+],note:"Une machine non mise à jour accumule les failles. Les mises à jour auto limitent ce risque sans intervention."},
+
+{id:"lx31",cat:"linux",title:"Protéger ses secrets",badge:"sécurité",summary:"Mots de passe hors du code, droits restreints.",tags:["secrets","mot de passe","permissions","chmod","sécurité"],steps:[
+  {t:"Isoler et restreindre.",code:`# identifiants dans config.ini (hors du code source)
+chmod 600 config.ini   # lisible par le propriétaire seul`},
+],note:"Un mot de passe en clair, partagé ou versionné, est compromis. Sépare les secrets et restreins les droits du fichier."},
+
+{id:"lx32",cat:"linux",title:"Sessions persistantes avec tmux",badge:"tmux",summary:"Garder un programme actif après déconnexion SSH.",tags:["tmux","session","ssh","persistant","outil"],steps:[
+  {t:"Créer, détacher, réattacher.",code:`tmux new -s iot       # nouvelle session
+# Ctrl-b puis d        -> détacher
+tmux attach -t iot     # revenir dessus`},
+],note:"En SSH, lancer le simulateur dans tmux évite qu'il s'arrête à la fermeture de la connexion. Indispensable pour un test qui dure."},
+
+{id:"lx33",cat:"linux",title:"Filtrer du JSON avec jq",badge:"jq",summary:"Lire une réponse d'API en ligne de commande.",tags:["jq","json","api","cli","outil"],steps:[
+  {t:"Extraire un champ.",code:`curl -s http://localhost/data.php | jq '.[0].valeur'
+curl -s http://localhost/data.php | jq '.[] | .capteur'`},
+],note:"<code>jq</code> formate et filtre du JSON : pratique pour tester une API PHP sans navigateur."},
+
+/* ================= WEB (cas & problèmes) ================= */
+{id:"wb5",cat:"web",title:"Activer des modules Apache",badge:"modules",summary:"a2enmod : rewrite, headers, ssl…",tags:["a2enmod","module","rewrite","ssl","headers"],steps:[
+  {t:"Activer puis redémarrer.",code:`sudo a2enmod rewrite ssl headers
+sudo systemctl restart apache2`},
+  {t:"Lister les modules.",code:`apache2ctl -M`},
+],note:"<b>mod_rewrite</b> et <b>mod_ssl</b> sont les plus demandés. Un restart est nécessaire après activation."},
+
+{id:"wb6",cat:"web",title:"Activer le HTTPS (auto-signé)",badge:"https",summary:"Chiffrer le dashboard en réseau local.",tags:["https","ssl","openssl","certificat","443"],steps:[
+  {t:"Générer un certificat.",code:`sudo mkdir -p /etc/apache2/ssl
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/site.key -out /etc/apache2/ssl/site.crt`},
+  {t:"VirtualHost 443.",code:`<VirtualHost *:443>
+    ServerName www.dashboard.local
+    DocumentRoot /var/www/dashboard
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl/site.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/site.key
+</VirtualHost>`},
+],note:"Pour un vrai domaine public, remplace l'auto-signé par <b>Let's Encrypt</b> (certbot)."},
+
+{id:"wb7",cat:"web",title:"Lire les logs Apache",badge:"logs",summary:"access.log et error.log, premier réflexe.",tags:["logs","access.log","error.log","apache","debug"],steps:[
+  {t:"Suivre en direct.",code:`sudo tail -f /var/log/apache2/access.log
+sudo tail -f /var/log/apache2/error.log`},
+],note:"Page blanche ou erreur 500 ? <b>error.log</b> donne la cause exacte : c'est le premier endroit à regarder."},
+
+{id:"wb8",cat:"web",title:"Vérifier la configuration Apache",badge:"configtest",summary:"Tester la syntaxe avant tout reload.",tags:["configtest","apachectl","syntaxe","vhost","-S"],steps:[
+  {t:"Syntaxe + vhosts.",code:`sudo apache2ctl configtest    # attendu : Syntax OK
+sudo apache2ctl -S`},
+],note:"Fais toujours <b>configtest</b> avant un reload : une erreur de syntaxe coupe TOUS les sites."},
+
+{id:"wb9",cat:"web",title:"Réécriture d'URL (mod_rewrite)",badge:"rewrite",summary:"URLs propres via .htaccess.",tags:["rewrite","htaccess","url","apache","mod_rewrite"],steps:[
+  {t:"Activer + autoriser le .htaccess.",code:`sudo a2enmod rewrite
+# dans le VirtualHost : <Directory ...> AllowOverride All </Directory>
+sudo systemctl restart apache2`},
+  {t:"Exemple de règle.",code:`RewriteEngine On
+RewriteRule ^capteur/([0-9]+)$ fiche.php?id=$1 [L]`},
+],note:"<code>AllowOverride All</code> est indispensable, sinon le .htaccess est ignoré sans erreur."},
+
+{id:"wb10",cat:"web",title:"En-têtes HTTP et CORS",badge:"headers",summary:"Autoriser une API à être appelée ailleurs.",tags:["headers","cors","mod_headers","api","apache"],steps:[
+  {t:"Activer mod_headers + autoriser.",code:`sudo a2enmod headers && sudo systemctl restart apache2
+# Header set Access-Control-Allow-Origin "*"`},
+],note:"Sans en-tête CORS, le navigateur bloque l'appel d'une API hébergée sur un autre domaine que le dashboard."},
+
+{id:"wb11",cat:"web",title:"Compression et cache",badge:"perf",summary:"Accélérer le dashboard.",tags:["deflate","cache","expires","performance","apache"],steps:[
+  {t:"Activer compression et cache.",code:`sudo a2enmod deflate expires
+sudo systemctl restart apache2
+# ExpiresByType text/css "access plus 1 day"`},
+],note:"La compression réduit le poids des pages, le cache évite de re-télécharger CSS/JS. Utile sur réseau lent."},
+
+{id:"wb12",cat:"web",title:"Restreindre l'accès par IP",badge:"accès",summary:"Réserver le dashboard au réseau local.",tags:["require ip","accès","restriction","apache","sécurité"],steps:[
+  {t:"Limiter un dossier à un réseau.",code:`<Directory /var/www/dashboard>
+    Require ip 192.168.1.0/24
+</Directory>`},
+],note:"<code>Require ip</code> limite l'accès à une plage : pratique pour réserver le dashboard à la salle serveur."},
+
+{id:"wb13",cat:"web",title:"Protéger le dashboard par mot de passe",badge:"htpasswd",summary:"Login navigateur via Apache.",tags:["htpasswd","authentification","basic","sécurité","dashboard"],steps:[
+  {t:"Créer le fichier de mots de passe.",code:`sudo htpasswd -c /etc/apache2/.htpasswd admin`},
+  {t:"Protéger le dossier.",code:`<Directory /var/www/dashboard>
+    AuthType Basic
+    AuthName "Acces restreint"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+</Directory>`},
+],note:"Combine-le avec HTTPS pour ne pas transmettre le mot de passe en clair sur le réseau."},
+
+{id:"wb14",cat:"web",title:"Mesurer le temps de réponse",badge:"perf",summary:"Vérifier que le dashboard répond vite.",tags:["curl","performance","ab","temps","test"],steps:[
+  {t:"Temps d'une requête.",code:`curl -o /dev/null -s -w "Temps: %{time_total} s" http://www.dashboard.local/`},
+  {t:"Sous charge (ApacheBench).",code:`ab -n 100 -c 10 http://www.dashboard.local/`},
+],note:"<code>curl -w</code> mesure une requête ; <code>ab</code> simule plusieurs visiteurs. Utile pour prouver que le système tient la charge."},
+
+/* ================= BASE DE DONNÉES (cas & problèmes) ================= */
+{id:"db6",cat:"db",title:"Requêtes SQL essentielles",badge:"sql",lang:"sql",summary:"Filtrer, trier, agréger, joindre.",tags:["select","where","group by","join","sql"],steps:[
+  {t:"Filtrer et trier.",code:`SELECT capteur, valeur FROM mesures
+WHERE type = 'temperature'
+ORDER BY date_mesure DESC LIMIT 10;`},
+  {t:"Agréger / joindre.",code:`SELECT type, AVG(valeur) FROM mesures GROUP BY type;
+SELECT m.valeur, c.emplacement FROM mesures m
+JOIN capteurs c ON c.code = m.capteur;`},
+],note:"<b>ORDER BY ... DESC + LIMIT</b> = les N dernières mesures. <b>GROUP BY</b> sert aux statistiques."},
+
+{id:"db7",cat:"db",title:"Sauvegarder et restaurer",badge:"backup",summary:"mysqldump pour exporter/importer.",tags:["mysqldump","backup","restore","dump","sauvegarde"],steps:[
+  {t:"Sauvegarder.",code:`mysqldump -u root -p supervision > supervision.sql`},
+  {t:"Restaurer.",code:`mysql -u root -p supervision < supervision.sql`},
+],note:"<b>mysqldump</b> produit un script SQL : pratique pour migrer ou faire un point de sauvegarde avant manipulation."},
+
+{id:"db8",cat:"db",title:"Clés primaires et étrangères",badge:"relations",lang:"sql",summary:"Relier des tables et garantir l'intégrité.",tags:["clé primaire","foreign key","relation","intégrité","sql"],steps:[
+  {t:"Clé primaire + auto-incrément.",code:`CREATE TABLE capteurs (
+  id   INT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(50) UNIQUE NOT NULL
+);`},
+  {t:"Clé étrangère.",code:`CREATE TABLE mesures (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  capteur_id INT,
+  FOREIGN KEY (capteur_id) REFERENCES capteurs(id)
+);`},
+],note:"La <b>clé étrangère</b> garantit qu'une mesure pointe vers un capteur existant : c'est l'intégrité référentielle."},
+
+{id:"db9",cat:"db",title:"Index et performance",badge:"index",lang:"sql",summary:"Accélérer les recherches.",tags:["index","performance","create index","sql","vitesse"],steps:[
+  {t:"Indexer une colonne filtrée/triée.",code:`CREATE INDEX idx_date ON mesures(date_mesure);
+SHOW INDEX FROM mesures;`},
+],note:"Un index accélère <code>WHERE/ORDER BY</code> au prix d'écritures un peu plus lentes : indexe les colonnes de recherche."},
+
+{id:"db10",cat:"db",title:"Réinitialiser le mot de passe root",badge:"secours",summary:"Récupération si le mot de passe est perdu.",tags:["root","mot de passe","reset","skip-grant","mysql"],steps:[
+  {t:"Démarrer sans contrôle d'auth.",code:`sudo systemctl stop mysql
+sudo mysqld_safe --skip-grant-tables &`},
+  {t:"Changer le mot de passe.",code:`mysql -u root
+FLUSH PRIVILEGES;
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'NouveauMdp!';`},
+],note:"Procédure de <b>secours</b> : pendant ce temps la base accepte tout le monde. À éviter sur une machine exposée."},
+
+{id:"db11",cat:"db",title:"UPDATE et DELETE sans tout casser",badge:"prudence",lang:"sql",summary:"Le WHERE qui sauve la base.",tags:["update","delete","where","sql","prudence"],steps:[
+  {t:"Toujours cibler avec WHERE.",code:`UPDATE capteurs SET emplacement='Salle 2' WHERE code='m5-01';
+DELETE FROM mesures WHERE date_mesure < '2026-01-01';`},
+  {t:"Vérifier d'abord avec un SELECT.",code:`SELECT * FROM mesures WHERE date_mesure < '2026-01-01';`},
+],note:"Un <code>UPDATE/DELETE</code> <b>sans WHERE</b> touche TOUTE la table. Teste toujours avec un SELECT avant."},
+
+{id:"db12",cat:"db",title:"Créer une vue",badge:"vue",lang:"sql",summary:"Une requête réutilisable comme une table.",tags:["view","vue","select","sql","simplifier"],steps:[
+  {t:"Définir et utiliser.",code:`CREATE VIEW dernieres_temp AS
+SELECT capteur, valeur, date_mesure FROM mesures
+WHERE type='temperature' ORDER BY date_mesure DESC;
+
+SELECT * FROM dernieres_temp LIMIT 10;`},
+],note:"Une vue mémorise une requête complexe : le dashboard interroge <code>dernieres_temp</code> au lieu de la réécrire partout."},
+
+{id:"db13",cat:"db",title:"Privilèges fins (GRANT / REVOKE)",badge:"droits",lang:"sql",summary:"Donner juste les droits nécessaires.",tags:["grant","revoke","privilèges","utilisateur","sql"],steps:[
+  {t:"Droits précis pour le compte applicatif.",code:`GRANT SELECT, INSERT ON supervision.* TO 'iot_app'@'localhost';
+FLUSH PRIVILEGES;
+SHOW GRANTS FOR 'iot_app'@'localhost';`},
+],note:"Le compte de l'app n'a besoin que de SELECT/INSERT : ne lui donne jamais ALL PRIVILEGES (moindre privilège)."},
+
+{id:"db14",cat:"db",title:"Bien choisir ses types de données",badge:"types",lang:"sql",summary:"INT, FLOAT, DATETIME, VARCHAR.",tags:["types","int","float","datetime","varchar"],steps:[
+  {t:"Types pour des mesures.",code:`CREATE TABLE mesures (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  capteur VARCHAR(50),
+  valeur FLOAT,
+  date_mesure DATETIME DEFAULT CURRENT_TIMESTAMP
+);`},
+],note:"<b>FLOAT</b> pour une mesure, <b>DATETIME</b> pour un horodatage, <b>VARCHAR(n)</b> pour du texte court. CURRENT_TIMESTAMP remplit la date seule."},
+
+{id:"db15",cat:"db",title:"Explorer la base avec dBeaver",badge:"dbeaver",summary:"Client graphique pour MySQL.",tags:["dbeaver","mysql","client","gui","base"],steps:[
+  {t:"Créer une connexion.",code:`# Nouvelle connexion > MySQL
+# Hôte localhost (ou IP) | Port 3306
+# Base supervision | iot_app / mot de passe`},
+],note:"dBeaver permet de voir les tables et lancer des requêtes sans ligne de commande : pratique pour la recette."},
+
+/* ================= MQTT (cas & problèmes) ================= */
+{id:"mq7",cat:"mqtt",title:"Messages retenus et QoS",badge:"retained",summary:"Garder le dernier état, choisir la fiabilité.",tags:["retained","qos","mosquitto_pub","fiabilité","mqtt"],steps:[
+  {t:"Retenu (-r) et QoS (-q).",code:`mosquitto_pub -h localhost -t salle1/etat -m "ON" -r
+mosquitto_pub -h localhost -t salle1/temp -m "23" -q 1`},
+],note:"Un message <b>retained</b> est conservé : tout nouvel abonné le reçoit aussitôt. Idéal pour un « dernier état connu »."},
+
+{id:"mq8",cat:"mqtt",title:"Last Will and Testament (LWT)",badge:"lwt",summary:"Détecter un capteur hors-ligne.",tags:["lwt","will","déconnexion","disponibilité","mqtt"],steps:[
+  {t:"Côté capteur (PubSubClient).",code:`client.connect("m5-salle1","iot_user","pass",
+  "salle1/status",0,true,"offline");
+client.publish("salle1/status","online",true);`},
+],note:"Le <b>LWT</b> est publié par le broker à la place du client s'il tombe : on sait ainsi qu'un capteur est déconnecté."},
+
+{id:"mq9",cat:"mqtt",title:"Bien nommer ses topics",badge:"convention",summary:"Une hiérarchie claire simplifie les abonnements.",tags:["topic","convention","wildcard","nommage","mqtt"],steps:[
+  {t:"Du général au particulier.",code:`siteA/salle1/m5-01/temperature
+siteA/salle1/m5-01/humidite`},
+  {t:"Wildcards.",code:`siteA/salle1/#         # tout sur salle1
+siteA/+/+/temperature # toutes les températures`},
+],note:"Topics cohérents = abonnements simples (<code>#</code>, <code>+</code>). Évite espaces et accents dans les topics."},
+
+{id:"mq10",cat:"mqtt",title:"Superviser le broker ($SYS)",badge:"monitoring",summary:"Clients connectés, messages, uptime.",tags:["$SYS","monitoring","journalctl","broker","mqtt"],steps:[
+  {t:"Statistiques + logs.",code:`mosquitto_sub -h localhost -t '$SYS/#' -v -u iot_user -P pass
+sudo journalctl -u mosquitto -f`},
+],note:"Les topics <code>$SYS/broker/...</code> exposent l'état du broker : utile pour le superviser lui-même."},
+
+{id:"mq11",cat:"mqtt",title:"Pont (bridge) entre deux brokers",badge:"bridge",summary:"Relier deux Mosquitto.",tags:["bridge","pont","fédération","mosquitto","mqtt"],steps:[
+  {t:"Config (mosquitto.conf).",code:`connection pont-site
+address 192.168.2.10:1883
+topic salle1/# both 0`},
+],note:"Un <b>bridge</b> recopie des topics d'un broker à l'autre : pour remonter plusieurs salles vers un broker central."},
+
+{id:"mq12",cat:"mqtt",title:"MQTT over WebSocket",badge:"websocket",summary:"Recevoir du MQTT dans le navigateur.",tags:["websocket","9001","navigateur","mosquitto","mqtt"],steps:[
+  {t:"Listener WebSocket.",code:`listener 9001
+protocol websockets
+# puis : sudo systemctl restart mosquitto`},
+],note:"Avec WebSocket (9001) et une lib JS, le dashboard reçoit les mesures en direct sans recharger la page."},
+
+{id:"mq13",cat:"mqtt",title:"Chiffrer Mosquitto en TLS",badge:"tls",summary:"Sécuriser le port MQTT (8883).",tags:["tls","ssl","8883","chiffrement","mosquitto"],steps:[
+  {t:"Listener TLS.",code:`listener 8883
+cafile   /etc/mosquitto/certs/ca.crt
+certfile /etc/mosquitto/certs/server.crt
+keyfile  /etc/mosquitto/certs/server.key`},
+],note:"1883 transmet en clair ; <b>8883 (TLS)</b> chiffre. Indispensable dès que le réseau n'est pas de confiance."},
+
+{id:"mq14",cat:"mqtt",title:"Tester la chaîne MQTT de bout en bout",badge:"bout-en-bout",summary:"Publier d'un côté, vérifier en base de l'autre.",tags:["mqtt","bout-en-bout","test","base","validation"],steps:[
+  {t:"Abonné témoin, publication, vérification.",code:`mosquitto_sub -h localhost -t "salle1/#" -v &
+mosquitto_pub -h localhost -t salle1/temperature -m "21"
+mysql -e "SELECT * FROM supervision.mesures ORDER BY id DESC LIMIT 1"`},
+],note:"Si la valeur publiée apparaît en base, toute la chaîne backend fonctionne. Sinon, le maillon en panne est entre les deux."},
+
+{id:"mq15",cat:"mqtt",title:"Espionner les topics (MQTT Explorer)",badge:"outil",summary:"Visualiser l'arborescence en direct.",tags:["mqtt explorer","topics","debug","broker","outil"],steps:[
+  {t:"Se connecter au broker.",code:`# Host : IP du broker | Port : 1883
+# Username/Password : iot_user / ...
+# -> l'arbre des topics s'affiche en direct`},
+],note:"MQTT Explorer montre tous les topics et leur dernière valeur : parfait pour vérifier qu'un capteur publie bien."},
+
+/* ================= BACKEND C++ (cas & problèmes) ================= */
+{id:"cp7",cat:"backend",title:"Héritage et polymorphisme",badge:"poo",lang:"cpp",summary:"Classe de base, dérivée, méthodes virtuelles.",tags:["héritage","virtual","polymorphisme","override","c++"],steps:[
+  {t:"Base abstraite + dérivée.",code:`class Capteur {
+protected: std::string nom;
+public:
+    Capteur(std::string n): nom(n) {}
+    virtual float lire() = 0;   // virtuelle pure
+};
+class CapteurTemp : public Capteur {
+public:
+    CapteurTemp(): Capteur("temperature") {}
+    float lire() override { return 23.5; }
+};`},
+  {t:"Manipuler via le type de base.",code:`Capteur* c = new CapteurTemp();
+std::cout << c->lire() << std::endl;
+delete c;`},
+],note:"Une méthode <b>virtual</b> exécute le bon code selon le type réel : c'est le polymorphisme, illustré en UML par l'héritage."},
+
+{id:"cp8",cat:"backend",title:"Gérer les erreurs (exceptions)",badge:"exceptions",lang:"cpp",summary:"try / catch pour ne pas planter.",tags:["exception","try","catch","erreur","c++"],steps:[
+  {t:"Lever et attraper.",code:`#include <stdexcept>
+try {
+    if (valeur < 0) throw std::runtime_error("valeur invalide");
+} catch (const std::exception& e) {
+    std::cerr << "Erreur : " << e.what() << std::endl;
+}`},
+],note:"<b>try/catch</b> isole le code risqué ; <code>e.what()</code> donne le message. Évite que tout s'arrête sur une donnée incorrecte."},
+
+{id:"cp9",cat:"backend",title:"Manipuler du JSON en C++",badge:"json",lang:"cpp",summary:"Sérialiser/parser avec nlohmann/json.",tags:["json","nlohmann","parse","dump","c++"],steps:[
+  {t:"Construire et lire.",code:`#include "json.hpp"
+using json = nlohmann::json;
+json j; j["capteur"]="salle1"; j["temperature"]=23.5;
+std::string texte = j.dump();
+json recu = json::parse(texte);
+float t = recu["temperature"];`},
+],note:"Transmettre du JSON en MQTT (plutôt qu'une valeur brute) permet d'envoyer plusieurs grandeurs en un message."},
+
+{id:"cp10",cat:"backend",title:"Déboguer avec gdb",badge:"gdb",summary:"Trouver l'origine d'un plantage.",tags:["gdb","debug","backtrace","crash","c++"],steps:[
+  {t:"Compiler en debug puis inspecter.",code:`g++ -g main.cpp -o backend
+gdb ./backend
+(gdb) run
+(gdb) backtrace`},
+],note:"L'option <code>-g</code> ajoute les infos de débogage. Après un crash, <b>backtrace</b> montre exactement où ça a planté."},
+
+{id:"cp11",cat:"backend",title:"Organiser un projet C++",badge:"structure",summary:"Séparer headers, sources et build.",tags:["structure","header","projet","makefile","organisation"],steps:[
+  {t:"Arborescence + séparation.",code:`projet/
+├── include/   (.h : déclarations)
+├── src/       (.cpp : implémentations)
+└── Makefile`},
+],note:"Séparer <b>.h</b> et <b>.cpp</b> clarifie le code et accélère la recompilation. Une classe = un .h + un .cpp."},
+
+{id:"cp12",cat:"backend",title:"Pointeurs et références",badge:"mémoire",lang:"cpp",summary:"Adresse, déréférencement, alias.",tags:["pointeur","référence","adresse","mémoire","c++"],steps:[
+  {t:"Distinguer les deux.",code:`int x = 10;
+int* p = &x;   // pointeur : adresse de x
+*p = 20;       // modifie x
+int& r = x;    // référence : alias de x
+r = 30;        // modifie x aussi`},
+],note:"<code>&</code> donne l'adresse, <code>*</code> déréférence. Une référence ne peut être ni nulle ni réaffectée : plus sûre."},
+
+{id:"cp13",cat:"backend",title:"Conteneurs : std::vector",badge:"stl",lang:"cpp",summary:"Liste dynamique d'éléments.",tags:["vector","stl","conteneur","boucle","c++"],steps:[
+  {t:"Remplir et parcourir.",code:`#include <vector>
+std::vector<float> mesures;
+mesures.push_back(23.5);
+for (float m : mesures) std::cout << m << std::endl;
+std::cout << "taille: " << mesures.size() << std::endl;`},
+],note:"<code>std::vector</code> est un tableau qui se redimensionne seul : la base des collections en C++ moderne."},
+
+{id:"cp14",cat:"backend",title:"Lire un fichier de configuration",badge:"fichiers",lang:"cpp",summary:"Charger les paramètres depuis un fichier.",tags:["ifstream","fichier","config","lecture","c++"],steps:[
+  {t:"Lire ligne par ligne.",code:`#include <fstream>
+std::ifstream f("config.ini");
+std::string ligne;
+while (std::getline(f, ligne)) std::cout << ligne << std::endl;`},
+],note:"Externaliser l'adresse du broker et les identifiants évite de les coder en dur (et de les exposer)."},
+
+{id:"cp15",cat:"backend",title:"Mesurer le temps (chrono)",badge:"temps",lang:"cpp",summary:"Chronométrer un traitement.",tags:["chrono","temps","performance","mesure","c++"],steps:[
+  {t:"Durée d'un bloc.",code:`#include <chrono>
+auto t0 = std::chrono::steady_clock::now();
+// ... traitement ...
+auto t1 = std::chrono::steady_clock::now();
+auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
+std::cout << ms << " ms" << std::endl;`},
+],note:"Vérifie qu'une insertion ou un traitement ne ralentit pas la boucle de réception MQTT."},
+
+{id:"cp16",cat:"backend",title:"Se connecter à MySQL en C++",badge:"mysql",lang:"cpp",summary:"Insérer une mesure depuis le backend.",tags:["mysql","connecteur","insert","backend","c++"],steps:[
+  {t:"Compiler avec la lib MySQL.",code:`g++ main.cpp -o backend $(mysql_config --cflags --libs)`},
+  {t:"Connexion + insertion.",code:`#include <mysql/mysql.h>
+MYSQL* db = mysql_init(nullptr);
+mysql_real_connect(db,"localhost","iot_app","pass","supervision",0,nullptr,0);
+mysql_query(db,"INSERT INTO mesures(capteur,valeur) VALUES('m5-01',23.5)");
+mysql_close(db);`},
+],note:"Pour des valeurs externes, utilise des requêtes préparées (<code>mysql_stmt_*</code>) pour éviter l'injection SQL."},
+
+{id:"cp17",cat:"backend",title:"Lire un diagramme de classes UML",badge:"uml",summary:"Comprendre la structure du backend.",tags:["uml","classe","conception","poo","diagramme"],steps:[
+  {t:"Anatomie d'une classe.",code:`+-------------------------+
+|        Capteur          |
++-------------------------+
+| - nom : string          |   (- privé)
+| - valeur : float        |
++-------------------------+
+| + lire() : float        |   (+ public)
++-------------------------+`},
+  {t:"Relations.",code:`Capteur <|-- CapteurTemp     (héritage)
+Backend o-- Capteur          (association)`},
+],note:"Le diagramme de classes décrit attributs, méthodes et relations. Il se traduit presque directement en C++."},
+
+{id:"cp18",cat:"backend",title:"Diagramme de séquence",badge:"uml",summary:"Décrire les échanges dans le temps.",tags:["uml","séquence","échanges","mqtt","conception"],steps:[
+  {t:"Le flux capteur -> base.",code:`Capteur   Broker    Backend   MySQL
+   | publie  |          |         |
+   |-------->|--------->| INSERT  |
+   |         |          |-------->|`},
+],note:"Le diagramme de séquence montre QUI parle à QUI et DANS QUEL ORDRE : idéal pour expliquer la chaîne à l'oral."},
+
+/* ================= EMBARQUÉ (cas & problèmes) ================= */
+{id:"em6",cat:"embedded",title:"Lire la pression (ENV / QMP6988)",badge:"pression",summary:"Pression atmosphérique en hPa.",tags:["env","qmp6988","pression","hpa","capteur"],steps:[
+  {t:"Initialiser et lire.",code:`#include "M5_ENV.h"
+QMP6988 qmp;
+void setup(){ M5.begin(); Wire.begin(); qmp.init(); }
+void loop(){
+  float p = qmp.calcPressure()/100.0;   // Pa -> hPa
+  M5.Lcd.printf("Pression: %.1f hPa", p);
+  delay(2000);
+}`},
+],note:"La pression brute est en Pascals : divise par 100 pour des hPa (l'unité météo usuelle)."},
+
+{id:"em7",cat:"embedded",title:"Lire le CO₂ (SCD40)",badge:"co2",summary:"Mesurer le dioxyde de carbone.",tags:["scd40","co2","sensirion","i2c","capteur"],steps:[
+  {t:"Démarrer la mesure.",code:`#include "SensirionI2CScd4x.h"
+SensirionI2CScd4x scd4x;
+void setup(){ Wire.begin(); scd4x.begin(Wire); scd4x.startPeriodicMeasurement(); }`},
+  {t:"Lire CO₂/temp/humidité.",code:`uint16_t co2; float t,h;
+scd4x.readMeasurement(co2,t,h);
+M5.Lcd.printf("CO2: %u ppm", co2);`},
+],note:"Le SCD40 a besoin de quelques secondes entre deux mesures. CO₂ > 1000 ppm = pièce mal ventilée."},
+
+{id:"em8",cat:"embedded",title:"Afficher sur l'écran M5Stack",badge:"lcd",summary:"Texte et rafraîchissement sans clignotement.",tags:["lcd","écran","m5.lcd","affichage","print"],steps:[
+  {t:"Afficher du texte.",code:`M5.Lcd.fillScreen(BLACK);
+M5.Lcd.setTextSize(2);
+M5.Lcd.setCursor(10,20);
+M5.Lcd.print("Temperature");`},
+  {t:"Mettre à jour proprement.",code:`M5.Lcd.fillRect(10,60,200,30,BLACK);  // efface la zone
+M5.Lcd.setCursor(10,60);
+M5.Lcd.printf("%.1f C", temp);`},
+],note:"Réécrire tout l'écran à chaque boucle fait clignoter : n'efface que la zone qui change (<code>fillRect</code>)."},
+
+{id:"em9",cat:"embedded",title:"Lire les boutons du M5Stack",badge:"boutons",summary:"Réagir aux appuis A/B/C.",tags:["boutons","btnA","update","interaction","m5stack"],steps:[
+  {t:"Détecter un appui.",code:`void loop(){
+  M5.update();                 // INDISPENSABLE
+  if (M5.BtnA.wasPressed()) M5.Lcd.print("A");
+}`},
+],note:"Appelle <code>M5.update()</code> en début de <code>loop()</code> sinon les boutons ne réagissent pas."},
+
+{id:"em10",cat:"embedded",title:"Envoyer du JSON en MQTT (ESP32)",badge:"json",summary:"Plusieurs grandeurs dans un message.",tags:["arduinojson","json","mqtt","publish","esp32"],steps:[
+  {t:"Construire et publier.",code:`#include <ArduinoJson.h>
+StaticJsonDocument<128> doc;
+doc["temperature"]=temp; doc["humidite"]=hum;
+char buf[128]; serializeJson(doc, buf);
+client.publish("salle1/data", buf);`},
+],note:"Avec <b>ArduinoJson</b> tu envoies plusieurs valeurs d'un coup ; le backend parse le JSON avant l'insertion."},
+
+{id:"em11",cat:"embedded",title:"Reconnexion WiFi + MQTT robuste",badge:"fiabilité",summary:"Tenir dans la durée malgré les coupures.",tags:["reconnexion","wifi","mqtt","robuste","loop"],steps:[
+  {t:"Vérifier à chaque boucle.",code:`void loop(){
+  if (WiFi.status()!=WL_CONNECTED) WiFi.reconnect();
+  if (!client.connected()) reconnect();
+  client.loop();
+}`},
+],note:"Sur un capteur en continu, gère les coupures : sinon le M5Stack se fige après la première perte de réseau."},
+
+{id:"em12",cat:"embedded",title:"Téléverser et lire le moniteur série",badge:"upload",summary:"Port, vitesse et flash de la carte.",tags:["upload","téléverser","moniteur série","baud","port"],steps:[
+  {t:"Vitesse + port.",code:`Serial.begin(115200);
+// Outils > Port > /dev/ttyUSB0  | Moniteur 115200 baud`},
+],note:"Caractères illisibles dans le moniteur ? La vitesse (baud) ne correspond pas à celle du <code>Serial.begin()</code>."},
+
+{id:"em13",cat:"embedded",title:"Économiser l'énergie (deep sleep)",badge:"sommeil",summary:"Faire dormir l'ESP32 entre deux mesures.",tags:["deep sleep","énergie","batterie","réveil","esp32"],steps:[
+  {t:"Dormir puis se réveiller.",code:`esp_sleep_enable_timer_wakeup(60 * 1000000ULL);  // 60 s
+esp_deep_sleep_start();   // repart de setup() au réveil`},
+],note:"En deep sleep l'ESP32 consomme très peu : idéal sur batterie. Au réveil, le programme recommence depuis <code>setup()</code>."},
+
+{id:"em14",cat:"embedded",title:"Détecter une présence (radar LD2410)",badge:"présence",summary:"Lire le capteur de présence par radar.",tags:["ld2410","radar","présence","détection","capteur"],steps:[
+  {t:"Lire l'état.",code:`#include <ld2410.h>
+ld2410 radar;
+void setup(){ Serial1.begin(256000); radar.begin(Serial1); }
+void loop(){
+  radar.read();
+  M5.Lcd.printf("Presence: %d", radar.presenceDetected());
+  delay(500);
+}`},
+],note:"Le LD2410 détecte une présence même immobile (radar), contrairement à un PIR qui ne voit que le mouvement."},
+
+{id:"em15",cat:"embedded",title:"Horodater avec le NTP",badge:"heure",summary:"Récupérer l'heure réseau.",tags:["ntp","heure","horodatage","temps","esp32"],steps:[
+  {t:"Synchroniser l'horloge.",code:`configTime(3600, 3600, "pool.ntp.org");
+struct tm t;
+if (getLocalTime(&t)) M5.Lcd.printf("%02d:%02d", t.tm_hour, t.tm_min);`},
+],note:"Souvent on laisse plutôt le <b>serveur</b> horodater (colonne DATETIME) : l'ESP32 n'a pas d'horloge fiable au démarrage."},
+
+{id:"em16",cat:"embedded",title:"Mémoriser des réglages (Preferences)",badge:"nvs",summary:"Conserver une config après coupure.",tags:["preferences","nvs","mémoire","config","esp32"],steps:[
+  {t:"Écrire et relire.",code:`#include <Preferences.h>
+Preferences prefs;
+prefs.begin("cfg", false);
+prefs.putString("ssid","MonWiFi");
+String s = prefs.getString("ssid","");
+prefs.end();`},
+],note:"Preferences (NVS) garde des réglages après redémarrage : pratique pour le SSID ou un identifiant de capteur."},
+
+/* ================= PHP (cas & problèmes) ================= */
+{id:"ph5",cat:"php",title:"Formulaires et données reçues",badge:"formulaire",lang:"php",summary:"POST/GET en se protégeant.",tags:["formulaire","post","get","htmlspecialchars","php"],steps:[
+  {t:"Formulaire POST.",code:`<form method="post" action="traiter.php">
+  <input type="text" name="capteur">
+  <button type="submit">Envoyer</button>
+</form>`},
+  {t:"Récupérer et nettoyer.",code:`<?php
+$capteur = htmlspecialchars(trim($_POST['capteur'] ?? ''));
+echo "Reçu : " . $capteur;`},
+],note:"Ne fais <b>jamais</b> confiance aux données reçues : filtre/valide <code>$_POST</code> et <code>$_GET</code> avant usage."},
+
+{id:"ph6",cat:"php",title:"Sessions et page protégée",badge:"session",lang:"php",summary:"Authentification simple par session.",tags:["session","login","authentification","header","php"],steps:[
+  {t:"Connexion.",code:`<?php session_start();
+$_SESSION['user'] = 'admin';`},
+  {t:"Protéger une page.",code:`<?php session_start();
+if (!isset($_SESSION['user'])) { header('Location: login.php'); exit; }`},
+],note:"<code>session_start()</code> doit précéder tout affichage HTML. Pour déconnecter : <code>session_destroy()</code>."},
+
+{id:"ph7",cat:"php",title:"Réutiliser du code (include / require)",badge:"include",lang:"php",summary:"En-tête, pied de page, config partagés.",tags:["include","require","header","config","php"],steps:[
+  {t:"Réutiliser.",code:`<?php include 'header.php'; ?>
+<h1>Contenu</h1>
+<?php include 'footer.php'; ?>`},
+  {t:"include vs require.",code:`include 'fichier.php';   // avertissement si absent
+require 'config.php';    // erreur fatale si absent (stoppe)`},
+],note:"Mets la connexion PDO dans un <b>config.php</b> inclus partout : tu ne dupliques plus le code de connexion."},
+
+{id:"ph8",cat:"php",title:"Tracer un graphique (Chart.js)",badge:"graphique",summary:"Visualiser l'évolution des mesures.",tags:["chart.js","graphique","json","courbe","dashboard"],steps:[
+  {t:"Données en JSON (data.php).",code:`<?php
+header('Content-Type: application/json');
+$pdo = new PDO("mysql:host=localhost;dbname=supervision","iot_app","pass");
+echo json_encode(
+  $pdo->query("SELECT date_mesure, valeur FROM mesures
+               WHERE type='temperature' ORDER BY date_mesure DESC LIMIT 20")
+      ->fetchAll(PDO::FETCH_ASSOC)
+);`},
+  {t:"Tracer côté navigateur.",code:`// page HTML : <canvas id="g"></canvas> + Chart.js via CDN
+const data = await (await fetch('data.php')).json();
+new Chart(document.getElementById('g'), {
+  type:'line',
+  data:{ labels:data.map(d=>d.date_mesure),
+         datasets:[{label:'Température', data:data.map(d=>d.valeur)}] }
+});`},
+],note:"Le PHP fournit les données en <b>JSON</b>, Chart.js les dessine : on sépare la source (PHP) de l'affichage (JS)."},
+
+{id:"ph9",cat:"php",title:"Requêtes préparées (anti-injection)",badge:"sécurité",lang:"php",summary:"Insérer des données utilisateur en sécurité.",tags:["pdo","prepare","injection","sécurité","php"],steps:[
+  {t:"Préparer puis exécuter.",code:`$stmt = $pdo->prepare("INSERT INTO mesures(capteur,valeur) VALUES(:c,:v)");
+$stmt->execute([':c'=>$capteur, ':v'=>$valeur]);`},
+],note:"<b>Ne concatène jamais</b> une variable dans une requête SQL : les requêtes préparées (:param) bloquent les injections."},
+
+{id:"ph10",cat:"php",title:"Mini API REST en PHP",badge:"api",lang:"php",summary:"Exposer les mesures en JSON.",tags:["api","rest","json","method","php"],steps:[
+  {t:"Répondre selon la méthode.",code:`<?php
+header('Content-Type: application/json');
+if ($_SERVER['REQUEST_METHOD']==='GET') {
+  echo json_encode(
+    $pdo->query("SELECT * FROM mesures ORDER BY id DESC LIMIT 50")
+        ->fetchAll(PDO::FETCH_ASSOC)
+  );
+}`},
+],note:"Une API REST renvoie du JSON, consommé par <code>fetch()</code> : sépare bien les données de l'affichage."},
+
+{id:"ph11",cat:"php",title:"Dates et fuseaux horaires",badge:"dates",lang:"php",summary:"Afficher l'heure correctement.",tags:["date","timezone","heure","format","php"],steps:[
+  {t:"Fuseau + format.",code:`<?php
+date_default_timezone_set('Europe/Paris');
+$d = new DateTime($row['date_mesure']);
+echo $d->format('d/m/Y H:i:s');`},
+],note:"Heure décalée ? Vérifie le fuseau côté PHP ET côté MySQL : ils doivent être cohérents."},
+
+{id:"ph12",cat:"php",title:"Connexion PDO robuste (gestion d'erreurs)",badge:"pdo",lang:"php",summary:"Attraper proprement une erreur de base.",tags:["pdo","try","catch","erreur","php"],steps:[
+  {t:"Connexion avec gestion d'erreurs.",code:`<?php
+try {
+  $pdo = new PDO("mysql:host=localhost;dbname=supervision","iot_app","pass");
+  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+  die("Connexion impossible : " . $e->getMessage());
+}`},
+],note:"Active <code>ERRMODE_EXCEPTION</code> : les erreurs SQL deviennent des exceptions claires au lieu d'échouer en silence."},
+
+/* ================= DÉPANNAGE (beaucoup de cas) ================= */
+{id:"dg9",cat:"debug",title:"Apache ne démarre pas (port 80 occupé)",badge:"dépannage",summary:"« Address already in use ».",tags:["apache","port 80","address already in use","ss","erreur"],steps:[
+  {t:"Cause + qui occupe le port.",code:`sudo journalctl -u apache2 -e
+sudo ss -tlnp | grep :80
+sudo systemctl stop nginx     # si un autre serveur l'occupe`},
+],note:"Deux serveurs ne peuvent pas écouter sur le même port. « Address already in use » = le 80 est déjà pris."},
+
+{id:"dg10",cat:"debug",title:"MySQL ne démarre pas",badge:"dépannage",summary:"Le service mysql reste failed.",tags:["mysql","ne démarre pas","error.log","permissions","erreur"],steps:[
+  {t:"Lire la cause.",code:`sudo journalctl -u mysql -e
+sudo tail -n 30 /var/log/mysql/error.log`},
+  {t:"Pistes.",code:`# disque plein (df -h), données corrompues, ou :
+sudo chown -R mysql:mysql /var/lib/mysql`},
+],note:"MySQL écrit presque toujours la raison dans <b>/var/log/mysql/error.log</b> : commence par là."},
+
+{id:"dg11",cat:"debug",title:"La page PHP est téléchargée",badge:"dépannage",summary:"Le navigateur télécharge le .php au lieu de l'exécuter.",tags:["php","téléchargé","mod-php","exécution","erreur"],steps:[
+  {t:"Installer/activer le module PHP.",code:`sudo apt install libapache2-mod-php
+sudo a2enmod php8.*
+sudo systemctl restart apache2`},
+],note:"Symptôme classique : le module PHP d'Apache n'est pas chargé. Après activation, redémarre Apache."},
+
+{id:"dg12",cat:"debug",title:"PDOException : could not find driver",badge:"dépannage",summary:"Le dashboard plante à la connexion.",tags:["pdo","could not find driver","php-mysql","driver","erreur"],steps:[
+  {t:"Vérifier puis installer.",code:`php -m | grep -i pdo_mysql     # absent ?
+sudo apt install php-mysql
+sudo systemctl restart apache2`},
+],note:"Le pilote <b>php-mysql</b> (PDO MySQL) n'est pas installé. Relance Apache pour qu'il recharge PHP."},
+
+{id:"dg13",cat:"debug",title:"Un service systemd reste « failed »",badge:"dépannage",summary:"failed après modification.",tags:["systemd","failed","daemon-reload","service","erreur"],steps:[
+  {t:"Erreur + rechargement.",code:`journalctl -u mon-service -e
+sudo systemctl daemon-reload
+sudo systemctl restart mon-service`},
+],note:"Tout changement d'un fichier <b>.service</b> exige <code>daemon-reload</code> avant le restart, sinon systemd garde l'ancienne définition."},
+
+{id:"dg14",cat:"debug",title:"SSH : Permission denied",badge:"dépannage",summary:"Connexion refusée (mot de passe/clé).",tags:["ssh","permission denied","clé","chmod","erreur"],steps:[
+  {t:"Diagnostiquer.",code:`ssh -v eleve@192.168.1.50
+# clé trop ouverte : chmod 600 ~/.ssh/id_*
+# serveur : PasswordAuthentication yes dans sshd_config`},
+],note:"<code>ssh -v</code> indique l'étape exacte de l'échec. Une clé privée doit être en <b>chmod 600</b>."},
+
+{id:"dg15",cat:"debug",title:"Le capteur I2C n'est pas détecté",badge:"dépannage",summary:"Aucune lecture du capteur Grove.",tags:["i2c","grove","scanner","wire","capteur"],steps:[
+  {t:"Scanner le bus I2C.",code:`Wire.begin();
+for (byte a=1; a<127; a++){
+  Wire.beginTransmission(a);
+  if (Wire.endTransmission()==0) Serial.println(a, HEX);
+}`},
+],note:"Aucune adresse trouvée ? Vérifie le câble Grove (bon port), l'alimentation, et que <code>Wire.begin()</code> est appelé."},
+
+{id:"dg16",cat:"debug",title:"MQTT : Connection refused",badge:"dépannage",summary:"Le client ne joint pas le broker.",tags:["mqtt","connection refused","broker","1883","erreur"],steps:[
+  {t:"Broker en écoute ? joignable ?",code:`sudo ss -tlnp | grep 1883
+mosquitto_pub -h localhost -t t -m x -u u -P p   # local
+nmap -p 1883 IP_DU_BROKER                         # distant`},
+],note:"« Connection refused » = personne n'écoute (broker arrêté) ou port filtré. Teste en local d'abord, puis le pare-feu."},
+
+{id:"dg17",cat:"debug",title:"Le dashboard reste vide",badge:"dépannage",summary:"La page s'affiche mais aucune donnée.",tags:["dashboard","vide","données","chaîne","erreur"],steps:[
+  {t:"Remonter la chaîne à l'envers.",code:`mysql -e "SELECT COUNT(*) FROM supervision.mesures"   # données ?
+systemctl status iot-backend                          # backend ?
+mosquitto_sub -t "salle1/#" -v                        # capteur publie ?`},
+],note:"Remonte étape par étape (base -> backend -> broker -> capteur). Le maillon vide t'indique où chercher."},
+
+{id:"dg18",cat:"debug",title:"L'heure des mesures est décalée",badge:"dépannage",summary:"Horodatage faux en base.",tags:["heure","timezone","ntp","datetime","erreur"],steps:[
+  {t:"Aligner les fuseaux.",code:`timedatectl
+sudo timedatectl set-timezone Europe/Paris
+mysql -e "SELECT NOW();"`},
+],note:"Un décalage vient presque toujours du fuseau du serveur. Aligne timezone système, MySQL et PHP."},
+
+{id:"dg19",cat:"debug",title:"MySQL : Too many connections",badge:"dépannage",summary:"La base refuse de nouvelles connexions.",tags:["mysql","too many connections","fuite","close","erreur"],steps:[
+  {t:"Voir les connexions.",code:`mysql -e "SHOW STATUS LIKE 'Threads_connected';"
+mysql -e "SHOW PROCESSLIST;"`},
+],note:"Cause fréquente : un script qui ouvre des connexions sans les fermer. Ferme (ou réutilise) tes connexions."},
+
+{id:"dg20",cat:"debug",title:"L'ESP32 ne se connecte pas au WiFi",badge:"dépannage",summary:"Le M5Stack reste bloqué.",tags:["wifi","esp32","connexion","2.4ghz","erreur"],steps:[
+  {t:"Diagnostiquer en série.",code:`WiFi.begin(ssid, pass);
+while (WiFi.status()!=WL_CONNECTED){ delay(500); Serial.print("."); }
+Serial.println(WiFi.localIP());`},
+],note:"L'ESP32 ne gère que le <b>WiFi 2,4 GHz</b> (pas le 5 GHz). Vérifie aussi SSID et mot de passe exacts."},
+
+{id:"dg21",cat:"debug",title:"Pas d'accès Internet / DNS",badge:"dépannage",summary:"La machine ne joint plus rien.",tags:["internet","dns","passerelle","resolv.conf","erreur"],steps:[
+  {t:"Diagnostic en escalier.",code:`ping 192.168.1.1     # passerelle
+ping 8.8.8.8         # Internet par IP
+ping google.com      # DNS
+cat /etc/resolv.conf`},
+],note:"8.8.8.8 répond mais pas google.com ? C'est le <b>DNS</b>, pas la connexion."},
+
+{id:"dg22",cat:"debug",title:"Disque plein",badge:"dépannage",summary:"« No space left on device ».",tags:["disque plein","df","du","logs","erreur"],steps:[
+  {t:"Trouver ce qui remplit le disque.",code:`df -h
+sudo du -sh /var/* | sort -h | tail
+sudo journalctl --vacuum-size=200M   # purge les vieux logs`},
+],note:"Souvent ce sont les logs qui débordent. Un disque plein bloque MySQL, Apache et l'écriture de fichiers."},
+
+{id:"dg23",cat:"debug",title:"Erreur 403 Forbidden",badge:"dépannage",summary:"Apache refuse l'accès au dossier.",tags:["403","forbidden","permissions","require","erreur"],steps:[
+  {t:"Vérifier droits et règles d'accès.",code:`ls -ld /var/www/dashboard           # droits du dossier
+sudo chown -R www-data:www-data /var/www/dashboard
+# vérifier Require / .htaccess dans le VirtualHost`},
+],note:"403 = Apache trouve le dossier mais refuse l'accès : droits insuffisants ou directive <code>Require</code> trop restrictive."},
+
+{id:"dg24",cat:"debug",title:"Erreur 500 Internal Server Error",badge:"dépannage",summary:"Page blanche ou erreur 500.",tags:["500","internal server error","error.log","php","erreur"],steps:[
+  {t:"Lire l'erreur exacte.",code:`sudo tail -f /var/log/apache2/error.log
+# souvent une erreur de syntaxe PHP ou un fichier inclus manquant`},
+],note:"Une 500 vient presque toujours du PHP. L'<b>error.log</b> Apache contient la ligne et le message précis."},
+
+{id:"dg25",cat:"debug",title:"MQTT : Connection refused, not authorised",badge:"dépannage",summary:"Le broker refuse l'identification.",tags:["mqtt","not authorised","mot de passe","mosquitto_passwd","erreur"],steps:[
+  {t:"Vérifier / recréer le mot de passe.",code:`# le mot de passe client doit correspondre au broker :
+sudo mosquitto_passwd /etc/mosquitto/passwd iot_user
+sudo systemctl restart mosquitto`},
+],note:"« not authorised » = identifiants MQTT erronés ou absents. Vérifie que client et broker utilisent le même mot de passe."},
+
+{id:"dg26",cat:"debug",title:"Tout marche, mais rien ne repart après reboot",badge:"dépannage",summary:"Les services ne démarrent pas au boot.",tags:["reboot","enable","systemd","boot","erreur"],steps:[
+  {t:"Activer chaque service au démarrage.",code:`sudo systemctl enable apache2 mysql mosquitto iot-backend
+sudo systemctl is-enabled apache2   # -> enabled`},
+],note:"Un service <b>started</b> mais pas <b>enabled</b> ne repart pas après reboot. Le test de recette ultime, c'est de redémarrer la machine."},
+
+{id:"dg27",cat:"debug",title:"MySQL : Access denied for user",badge:"dépannage",summary:"Connexion à la base refusée.",tags:["mysql","access denied","privilèges","mot de passe","erreur"],steps:[
+  {t:"Vérifier compte, hôte et droits.",code:`mysql -u iot_app -p     # le mot de passe est-il le bon ?
+# en tant que root :
+SELECT user, host FROM mysql.user;
+SHOW GRANTS FOR 'iot_app'@'localhost';`},
+],note:"« Access denied » : mauvais mot de passe, ou le compte existe pour un autre hôte (ex : '%' au lieu de 'localhost')."},
+
 ];
 
 /* ============================================================
