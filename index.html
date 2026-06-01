@@ -273,6 +273,7 @@ const CATS = [
   {id:"php",     name:"PHP & Dashboard",    desc:"Bases PHP/HTML, affichage MySQL et supervision temps réel.", icon:"code"},
   {id:"debug",   name:"Dépannage",          desc:"Symptômes courants et leur résolution rapide, du capteur au dashboard.", icon:"life"},
   {id:"links",   name:"Liens utiles",       desc:"Dépôts du projet : clone direct et commande d'exécution la plus rapide.", icon:"link"},
+  {id:"os",      name:"OS & clés bootables", desc:"Télécharger des ISO (Ubuntu, Debian…) et créer une clé USB bootable.", icon:"disc"},
 ];
 
 const G = [
@@ -1845,6 +1846,89 @@ sudo bash 05-fix-bdd-php.sh        # corriger les problèmes détectés`},
 cd Paul-Tools && sudo bash *.sh`},
 ],note:"Boîte à outils générale incluant l'analyse <b>Mosquitto/MQTT</b>. Adapte le nom du script selon le menu/README. Dépôt : <a href='https://github.com/uruzFR/Paul-Tools' target='_blank' rel='noopener'>github.com/uruzFR/Paul-Tools</a>"},
 
+/* ================= INTRO LINUX (bases supplémentaires) ================= */
+{id:"il13",cat:"intro",title:"Installer sudo et donner les droits",badge:"bases",summary:"Quand sudo n'est pas présent (Debian minimal).",tags:["sudo","root","usermod","droits","debian"],steps:[
+  {t:"Devenir root, installer sudo, s'ajouter au groupe.",code:`su -                       # devenir root (mot de passe root)
+apt update && apt install sudo
+usermod -aG sudo eleve      # autorise 'eleve' à utiliser sudo
+# déconnecte/reconnecte la session pour appliquer`},
+],note:"Sur Ubuntu, sudo est déjà là et le 1er utilisateur est sudoer. Sur <b>Debian minimal</b>, il faut souvent l'installer et s'ajouter au groupe <code>sudo</code>."},
+
+{id:"il14",cat:"intro",title:"Surveiller le système avec btop / htop",badge:"monitoring",summary:"Voir CPU, RAM et processus en temps réel.",tags:["btop","htop","top","monitoring","processus"],steps:[
+  {t:"Installer et lancer btop.",code:`sudo apt install btop
+btop        # q pour quitter`},
+  {t:"Alternatives.",code:`top         # présent partout
+htop        # plus lisible (sudo apt install htop)`},
+],note:"<b>btop</b> affiche CPU, RAM, disque, réseau et processus de façon claire : idéal pour repérer ce qui charge la machine."},
+
+{id:"il15",cat:"intro",title:"Installer les outils de base",badge:"outils",summary:"Le paquetage de confort d'une machine neuve.",tags:["apt","curl","git","vim","build-essential"],steps:[
+  {t:"Tout installer d'un coup.",code:`sudo apt update
+sudo apt install curl wget git vim nano tree htop unzip net-tools build-essential`},
+],note:"À installer juste après la mise en service : curl/wget (télécharger), git (versionner), tree (arborescence), build-essential (compiler en C/C++)."},
+
+{id:"il16",cat:"intro",title:"Visualiser l'arborescence (tree)",badge:"outils",summary:"Voir un dossier sous forme d'arbre.",tags:["tree","arborescence","dossier","structure"],steps:[
+  {t:"Installer puis afficher.",code:`sudo apt install tree
+tree -L 2 /var/www     # limite à 2 niveaux
+tree -a                # inclut les fichiers cachés`},
+],note:"<code>tree</code> donne une vue claire de la structure d'un projet ; <code>-L</code> limite la profondeur affichée."},
+
+{id:"il17",cat:"intro",title:"Infos système en un coup d'œil",badge:"infos",summary:"Savoir sur quelle machine on travaille.",tags:["uname","lsb_release","neofetch","infos","système"],steps:[
+  {t:"Noyau, distribution, résumé visuel.",code:`uname -a            # noyau + architecture
+lsb_release -a      # distribution et version
+sudo apt install neofetch && neofetch`},
+],note:"<b>neofetch</b> (ou fastfetch) affiche un résumé (OS, noyau, CPU, RAM) : pratique pour vérifier la machine d'un coup d'œil."},
+
+{id:"il18",cat:"intro",title:"Premiers pas après une installation",badge:"démarrage",summary:"La check-list d'arrivée sur une machine neuve.",tags:["update","timezone","ssh","démarrage","post-install"],steps:[
+  {t:"Mettre à jour, régler l'heure, installer le confort, activer SSH.",code:`sudo apt update && sudo apt upgrade -y       # système à jour
+sudo timedatectl set-timezone Europe/Paris   # fuseau horaire
+sudo apt install curl git vim btop            # outils de confort
+sudo apt install openssh-server               # accès distant SSH`},
+],note:"Mettre à jour, régler le fuseau, installer les outils et activer SSH : la base avant de configurer un serveur."},
+
+/* ================= OS & CLÉS BOOTABLES ================= */
+{id:"os1",cat:"os",title:"Télécharger Ubuntu (ISO)",badge:"iso",summary:"Image d'installation officielle d'Ubuntu.",tags:["ubuntu","iso","télécharger","lts","linux"],steps:[
+  {t:"Récupérer l'image.",code:`# Page officielle : https://ubuntu.com/download
+# Choisis une version LTS (ex. 24.04 LTS) en 64 bits (amd64)
+# Desktop = poste avec interface | Server = serveur sans interface`},
+],note:"Prends toujours une <b>LTS</b> (support long). Lien : <a href='https://ubuntu.com/download' target='_blank' rel='noopener'>ubuntu.com/download</a>"},
+
+{id:"os2",cat:"os",title:"Télécharger Debian (ISO)",badge:"iso",summary:"Image d'installation officielle de Debian.",tags:["debian","iso","netinst","serveur","linux"],steps:[
+  {t:"Récupérer l'image.",code:`# Page officielle : https://www.debian.org/distrib/
+# 'netinst' = petite image qui télécharge le reste pendant l'install
+# ou image complète si pas de réseau pendant l'installation`},
+],note:"Debian est très stable, idéal pour un <b>serveur</b>. Lien : <a href='https://www.debian.org/distrib/' target='_blank' rel='noopener'>debian.org/distrib</a>"},
+
+{id:"os3",cat:"os",title:"Clé bootable sous Windows (Rufus)",badge:"usb",summary:"Créer une clé d'installation depuis Windows.",tags:["rufus","windows","usb","bootable","clé"],steps:[
+  {t:"Avec Rufus.",code:`# 1) télécharger Rufus : https://rufus.ie
+# 2) brancher la clé USB (elle sera ENTIÈREMENT EFFACÉE)
+# 3) Périphérique = ta clé | Sélection = l'ISO | cliquer DÉMARRER`},
+],note:"Rufus est le plus simple sous Windows ; la clé est intégralement effacée. Lien : <a href='https://rufus.ie' target='_blank' rel='noopener'>rufus.ie</a>"},
+
+{id:"os4",cat:"os",title:"Clé bootable multiplateforme (Etcher / Ventoy)",badge:"usb",summary:"Outils Windows / macOS / Linux.",tags:["etcher","ventoy","usb","bootable","multiplateforme"],steps:[
+  {t:"balenaEtcher (simple, 3 étapes).",code:`# https://etcher.balena.io
+# choisir l'image  ->  choisir la clé  ->  Flash!`},
+  {t:"Ventoy (plusieurs ISO sur une clé).",code:`# https://www.ventoy.net
+# installe Ventoy sur la clé UNE seule fois,
+# puis copie autant d'ISO que tu veux dessus`},
+],note:"Etcher = simple et multiplateforme. Ventoy = plusieurs ISO sur une seule clé, choix au démarrage. Liens : <a href='https://etcher.balena.io' target='_blank' rel='noopener'>etcher.balena.io</a> · <a href='https://www.ventoy.net' target='_blank' rel='noopener'>ventoy.net</a>"},
+
+{id:"os5",cat:"os",title:"Clé bootable en ligne de commande (Linux, dd)",badge:"usb",summary:"Écrire une ISO sur une clé avec dd.",tags:["dd","linux","usb","bootable","lsblk"],steps:[
+  {t:"Repérer la clé PUIS écrire l'image.",code:`lsblk                 # identifie la clé (ex: /dev/sdb) — le DISQUE, pas une partition
+sudo dd if=ubuntu-24.04.iso of=/dev/sdb bs=4M status=progress oflag=sync`},
+],note:"<b>Attention :</b> <code>dd</code> écrase tout le disque cible. Vérifie 3 fois le <code>of=</code> avec <code>lsblk</code> — une erreur peut effacer ton disque dur."},
+
+{id:"os6",cat:"os",title:"Carte SD pour Raspberry Pi (Imager)",badge:"sd",summary:"Écrire un OS sur carte SD pour un Pi / SBC.",tags:["raspberry","imager","sd","sbc","carte"],steps:[
+  {t:"Avec Raspberry Pi Imager.",code:`# https://www.raspberrypi.com/software/
+# choisir l'OS  ->  choisir la carte SD  ->  Écrire
+# (permet aussi de pré-activer SSH et le Wi-Fi)`},
+],note:"L'Imager télécharge ET écrit l'OS, et pré-configure SSH/Wi-Fi. Lien : <a href='https://www.raspberrypi.com/software/' target='_blank' rel='noopener'>raspberrypi.com/software</a>"},
+
+{id:"os7",cat:"os",title:"Vérifier l'intégrité d'une ISO",badge:"checksum",summary:"S'assurer que l'image n'est pas corrompue.",tags:["sha256","checksum","intégrité","iso","vérifier"],steps:[
+  {t:"Comparer la somme de contrôle.",code:`sha256sum ubuntu-24.04.iso
+# compare le résultat avec le fichier SHA256SUMS fourni sur la page de téléchargement`},
+],note:"Vérifier le <b>SHA256</b> garantit que l'ISO n'a pas été corrompue (téléchargement) ni altérée avant l'installation."},
+
+
 
 ];
 
@@ -1862,6 +1946,7 @@ const ICONS = {
   life:'<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line>',
   book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>',
   link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>',
+  disc:'<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle>',
 };
 function svg(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.code)+'</svg>';}
 
