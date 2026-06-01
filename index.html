@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackForge — Manuel IoT &amp; Serveur Linux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Spline+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e10;
+    --bg-2:#111417;
+    --panel:#15191d;
+    --panel-2:#1b2026;
+    --border:#262c34;
+    --border-soft:#1e242b;
+    --text:#e8edf2;
+    --muted:#8b96a3;
+    --muted-2:#5f6975;
+    --accent:#7ee787;
+    --accent-dim:#3fb950;
+    --amber:#f0b072;
+    --code-bg:#0a0c0e;
+    --shadow:0 18px 50px -22px rgba(0,0,0,.8);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Spline Sans',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    background-image:
+      radial-gradient(700px 380px at 88% -8%, rgba(126,231,135,.07), transparent 60%),
+      radial-gradient(620px 340px at 6% 4%, rgba(240,176,114,.05), transparent 55%);
+    background-attachment:fixed;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;
+    background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+    background-size:46px 46px;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(12,14,16,.82);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .head-inner{display:flex;align-items:center;gap:20px;padding:14px 24px;max-width:1120px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:11px;cursor:pointer;flex-shrink:0;user-select:none}
+  .logo{
+    width:34px;height:34px;border-radius:9px;flex-shrink:0;
+    background:linear-gradient(145deg,#1c2329,#10141 7);
+    border:1px solid var(--border);
+    display:grid;place-items:center;
+    position:relative;overflow:hidden;
+  }
+  .logo svg{width:19px;height:19px}
+  .brand-txt{font-family:'Bricolage Grotesque';font-weight:800;font-size:18px;letter-spacing:-.3px}
+  .brand-txt span{color:var(--accent)}
+  .brand-sub{font-size:11px;color:var(--muted-2);font-family:'JetBrains Mono';letter-spacing:.5px;margin-top:-3px}
+
+  .search-shell{flex:1;position:relative;max-width:560px;margin:0 auto}
+  .search-shell svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted-2)}
+  #search{
+    width:100%;padding:11px 60px 11px 40px;
+    background:var(--bg-2);border:1px solid var(--border);border-radius:11px;
+    color:var(--text);font-family:'Spline Sans';font-size:14px;outline:none;
+    transition:border-color .2s,box-shadow .2s;
+  }
+  #search::placeholder{color:var(--muted-2)}
+  #search:focus{border-color:var(--accent-dim);box-shadow:0 0 0 3px rgba(63,185,80,.12)}
+  .kbd{
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+    font-family:'JetBrains Mono';font-size:11px;color:var(--muted-2);
+    border:1px solid var(--border);border-radius:6px;padding:2px 7px;background:var(--panel);
+    pointer-events:none;
+  }
+  .gh-link{flex-shrink:0;color:var(--muted);font-size:13px;font-family:'JetBrains Mono';text-decoration:none;transition:color .2s;display:flex;align-items:center;gap:6px}
+  .gh-link:hover{color:var(--accent)}
+  @media(max-width:760px){.gh-link{display:none}.head-inner{gap:12px;padding:11px 16px}.wrap{padding:0 16px}.brand-sub{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{padding:56px 0 30px;text-align:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono';font-size:12px;color:var(--accent);
+    border:1px solid var(--border);border-radius:30px;padding:6px 14px;background:var(--panel);
+    margin-bottom:22px;letter-spacing:.3px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .hero h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:clamp(30px,5vw,50px);line-height:1.05;letter-spacing:-1.2px;max-width:760px;margin:0 auto 18px}
+  .hero h1 em{font-style:normal;color:var(--accent);position:relative}
+  .hero p{color:var(--muted);font-size:clamp(15px,2vw,17px);max-width:560px;margin:0 auto}
+  .hero .stats{display:flex;gap:28px;justify-content:center;margin-top:30px;flex-wrap:wrap}
+  .stat b{font-family:'Bricolage Grotesque';font-size:22px;color:var(--text)}
+  .stat span{display:block;font-size:12px;color:var(--muted-2);font-family:'JetBrains Mono';margin-top:-2px}
+
+  /* ---------- section headers ---------- */
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin:46px 0 22px}
+  .sec-head h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;letter-spacing:-.4px}
+  .sec-head .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+  .sec-head .count{font-family:'JetBrains Mono';font-size:12px;color:var(--muted-2)}
+
+  /* ---------- category grid ---------- */
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .cat-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;cursor:pointer;text-align:left;color:inherit;font:inherit;
+    transition:transform .18s,border-color .18s,background .18s;
+    position:relative;overflow:hidden;
+    opacity:0;transform:translateY(14px);
+    animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes rise{to{opacity:1;transform:translateY(0)}}
+  .cat-card::after{content:"";position:absolute;inset:0;background:radial-gradient(220px 120px at var(--mx,50%) var(--my,0),rgba(126,231,135,.08),transparent 70%);opacity:0;transition:opacity .25s;pointer-events:none}
+  .cat-card:hover{transform:translateY(-3px);border-color:var(--accent-dim)}
+  .cat-card:hover::after{opacity:1}
+  .cat-ico{width:42px;height:42px;border-radius:10px;background:var(--panel-2);border:1px solid var(--border);display:grid;place-items:center;margin-bottom:14px;color:var(--accent)}
+  .cat-ico svg{width:21px;height:21px}
+  .cat-card h3{font-family:'Bricolage Grotesque';font-weight:600;font-size:17px;margin-bottom:5px}
+  .cat-card p{font-size:13.5px;color:var(--muted);line-height:1.5}
+  .cat-card .tag{display:inline-block;margin-top:13px;font-family:'JetBrains Mono';font-size:11.5px;color:var(--muted-2)}
+  .cat-card .tag b{color:var(--accent-dim)}
+
+  /* ---------- guide list ---------- */
+  .back-bar{display:flex;align-items:center;gap:12px;margin:30px 0 4px}
+  .back-btn{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font:inherit;font-size:13px;cursor:pointer;transition:.18s}
+  .back-btn:hover{color:var(--text);border-color:var(--accent-dim)}
+  .crumb{font-family:'JetBrains Mono';font-size:12.5px;color:var(--muted-2)}
+  .crumb b{color:var(--accent)}
+
+  .guide-list{display:grid;gap:11px;margin-top:8px}
+  .guide-item{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    cursor:pointer;color:inherit;font:inherit;text-align:left;
+    transition:border-color .18s,background .18s;overflow:hidden;
+  }
+  .guide-item:hover{border-color:var(--accent-dim)}
+  .gi-head{display:flex;align-items:center;gap:14px;padding:16px 18px}
+  .gi-badge{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent-dim);background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);padding:3px 8px;border-radius:6px;flex-shrink:0}
+  .gi-main{flex:1;min-width:0}
+  .gi-main h4{font-family:'Bricolage Grotesque';font-weight:600;font-size:15.5px}
+  .gi-main p{font-size:13px;color:var(--muted);margin-top:2px}
+  .gi-chev{color:var(--muted-2);transition:transform .25s;flex-shrink:0}
+  .guide-item.open .gi-chev{transform:rotate(90deg);color:var(--accent)}
+
+  .gi-body{display:none;padding:0 18px 20px;border-top:1px solid var(--border-soft)}
+  .guide-item.open .gi-body{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+  .step{display:flex;gap:14px;padding-top:18px}
+  .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--panel-2);display:grid;place-items:center;font-family:'JetBrains Mono';font-size:12px;color:var(--accent);margin-top:2px}
+  .step-body{flex:1;min-width:0}
+  .step-body .st-text{font-size:14.5px;color:var(--text)}
+  .step-body .st-text code{font-family:'JetBrains Mono';font-size:12.5px;background:var(--panel-2);border:1px solid var(--border);padding:1px 6px;border-radius:5px;color:var(--amber)}
+
+  .code{position:relative;margin-top:10px;background:var(--code-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .code-top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border-soft);background:rgba(255,255,255,.015)}
+  .code-lang{font-family:'JetBrains Mono';font-size:11px;color:var(--muted-2);letter-spacing:.5px}
+  .copy-btn{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:5px}
+  .copy-btn:hover{color:var(--accent);border-color:var(--accent-dim)}
+  .copy-btn.done{color:var(--accent);border-color:var(--accent-dim)}
+  .code pre{margin:0;padding:13px 14px;overflow-x:auto}
+  .code code{font-family:'JetBrains Mono';font-size:12.8px;line-height:1.7;color:#cdd6e0;white-space:pre;display:block}
+  .code .cmt{color:var(--muted-2)}
+  .code .pmt{color:var(--accent-dim)}
+
+  .note{margin-top:14px;display:flex;gap:11px;background:rgba(240,176,114,.06);border:1px solid rgba(240,176,114,.22);border-radius:10px;padding:12px 14px;font-size:13.5px;color:#e9d3bb}
+  .note svg{flex-shrink:0;width:17px;height:17px;color:var(--amber);margin-top:2px}
+  .note b{color:var(--amber)}
+
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border-soft)}
+  .tags .t{font-family:'JetBrains Mono';font-size:11px;color:var(--muted-2);background:var(--panel-2);border:1px solid var(--border);border-radius:30px;padding:3px 10px}
+
+  /* ---------- search results ---------- */
+  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+  .empty svg{width:40px;height:40px;color:var(--muted-2);margin-bottom:14px}
+  .empty b{display:block;font-family:'Bricolage Grotesque';font-size:18px;color:var(--text);margin-bottom:6px}
+  mark{background:rgba(126,231,135,.22);color:var(--accent);border-radius:3px;padding:0 2px}
+
+  footer{margin-top:70px;border-top:1px solid var(--border-soft);padding:30px 0 40px;text-align:center;color:var(--muted-2);font-size:12.5px;font-family:'JetBrains Mono'}
+  footer b{color:var(--muted)}
+
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="brand" onclick="goHome()">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#7ee787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-txt">Stack<span>Forge</span></div>
+        <div class="brand-sub">infra · iot · cookbook</div>
+      </div>
+    </div>
+    <div class="search-shell">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="search" type="text" autocomplete="off" placeholder="Décris ton problème… (ex : mosquitto refuse la connexion, erreur 403 apache, port mysql)">
+      <span class="kbd">/</span>
+    </div>
+    <a class="gh-link" href="#" onclick="return false">v1.0</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="eyebrow"><span class="dot"></span> Manuel de terrain · capteurs → broker → serveur → dashboard</div>
+    <h1>Le guide <em>pas à pas</em> pour câbler, déployer et superviser un système IoT complet.</h1>
+    <p>Des fiches concrètes et copiables pour chaque brique de la chaîne : Linux, MQTT, MySQL, Apache/PHP, le backend C++ et l'embarqué M5Stack/ESP32.</p>
+    <div class="stats">
+      <div class="stat"><b id="stat-cat">8</b><span>catégories</span></div>
+      <div class="stat"><b id="stat-guide">40</b><span>fiches</span></div>
+      <div class="stat"><b>1</b><span>chaîne complète</span></div>
+    </div>
+  </section>
+
+  <!-- CATEGORY VIEW -->
+  <section id="catView">
+    <div class="sec-head"><h2>Parcourir par domaine</h2><div class="line"></div><span class="count" id="catCount"></span></div>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <!-- LIST VIEW (category or search) -->
+  <section id="listView" class="hidden">
+    <div class="back-bar">
+      <button class="back-btn" onclick="goHome()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Retour
+      </button>
+      <span class="crumb" id="crumb"></span>
+    </div>
+    <div class="guide-list" id="guideList"></div>
+    <div class="empty hidden" id="emptyState">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <b>Aucune fiche trouvée</b>
+      Essaie un autre mot-clé : <i>mqtt</i>, <i>vhost</i>, <i>ufw</i>, <i>capteur</i>, <i>pdo</i>…
+    </div>
+  </section>
+</main>
+
+<footer>
+  <b>StackForge</b> — manuel technique IoT &amp; serveur Linux · mémo de révision &amp; dépannage
+</footer>
+
+<script>
+/* ============================================================
+   DONNÉES
+============================================================ */
+const CATS = [
+  {id:"linux",   name:"Système Linux",      desc:"Commandes, services systemd, réseau, pare-feu UFW et stack LAMP.", icon:"terminal"},
+  {id:"web",     name:"Serveur Web",        desc:"Apache2, VirtualHosts, résolution de noms et intégration PHP.", icon:"server"},
+  {id:"db",      name:"Base de données",    desc:"Installation MySQL, utilisateurs, scripts SQL, PDO et dBeaver.", icon:"database"},
+  {id:"mqtt",    name:"MQTT & Mosquitto",   desc:"Protocole, broker, sécurisation, clients et scripts de test.", icon:"radio"},
+  {id:"backend", name:"Backend C++",        desc:"Compilation g++, Makefile, POO, UML et client MQTT en C++.", icon:"cpu"},
+  {id:"embedded",name:"M5Stack & ESP32",    desc:"Arduino IDE, capteurs Grove, WiFi et publication MQTT.", icon:"chip"},
+  {id:"php",     name:"PHP & Dashboard",    desc:"Bases PHP/HTML, affichage MySQL et supervision temps réel.", icon:"code"},
+  {id:"debug",   name:"Dépannage",          desc:"Symptômes courants et leur résolution rapide, du capteur au dashboard.", icon:"life"},
+];
+
+const G = [
+/* ---------------- LINUX ---------------- */
+{id:"lx1",cat:"linux",title:"Commandes de base à connaître",badge:"linux",summary:"Naviguer, manipuler fichiers, droits et processus.",tags:["bash","cd","ls","chmod","sudo"],steps:[
+  {t:"Se déplacer et lister le contenu d'un dossier.",code:`cd /var/www/html
+ls -la          # liste détaillée + fichiers cachés
+pwd             # affiche le dossier courant`},
+  {t:"Créer, copier, déplacer, supprimer.",code:`mkdir projet
+cp source.php dest.php
+mv ancien.txt nouveau.txt
+rm fichier.txt          # rm -r dossier/ pour un dossier`},
+  {t:"Voir et modifier un fichier.",code:`cat config.php          # affiche tout
+nano /etc/hosts         # éditeur simple
+tail -f /var/log/syslog # suit un log en direct`},
+  {t:"Gérer les droits et la propriété.",code:`sudo chown -R www-data:www-data /var/www/dashboard
+chmod 644 index.php     # rw pour le proprio, r pour les autres
+chmod +x script.sh`},
+  {t:"Surveiller les processus.",code:`ps aux | grep mosquitto
+top                     # activité temps réel (q pour quitter)
+kill -9 1234            # force l'arrêt du PID 1234`},
+],note:"<b>sudo</b> exécute une commande en administrateur. Si une commande échoue avec « Permission denied », c'est souvent qu'il faut la préfixer par <code>sudo</code>."},
+
+{id:"lx2",cat:"linux",title:"Gérer les services avec systemctl",badge:"systemd",summary:"Démarrer, arrêter, activer au boot et diagnostiquer un service.",tags:["systemctl","service","systemd","status","boot"],steps:[
+  {t:"État d'un service (ici Apache).",code:`systemctl status apache2`},
+  {t:"Démarrer, arrêter, redémarrer.",code:`sudo systemctl start mosquitto
+sudo systemctl stop mosquitto
+sudo systemctl restart apache2
+sudo systemctl reload apache2   # recharge la conf sans couper`},
+  {t:"Activer / désactiver le démarrage automatique au boot.",code:`sudo systemctl enable mysql     # démarre au boot
+sudo systemctl disable mysql    # ne démarre plus au boot
+sudo systemctl is-enabled apache2`},
+  {t:"Lire les journaux d'un service en cas de panne.",code:`journalctl -u mosquitto -e      # dernières lignes
+journalctl -u apache2 --since "10 min ago"`},
+],note:"Après chaque modification d'un fichier de configuration, pense à <b>recharger</b> ou <b>redémarrer</b> le service concerné, sinon la nouvelle conf n'est pas prise en compte."},
+
+{id:"lx3",cat:"linux",title:"Configurer le réseau (IP fixe)",badge:"réseau",summary:"Donner une adresse IP statique au serveur avec Netplan.",tags:["netplan","ip","réseau","statique","ifconfig"],steps:[
+  {t:"Identifier le nom de l'interface et l'IP actuelle.",code:`ip a                    # cherche eth0, ens33, enp0s3...`},
+  {t:"Éditer le fichier Netplan.",code:`sudo nano /etc/netplan/00-installer-config.yaml`},
+  {t:"Définir une IP fixe (attention à l'indentation YAML).",code:`network:
+  version: 2
+  ethernets:
+    ens33:
+      dhcp4: no
+      addresses: [192.168.1.50/24]
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]`},
+  {t:"Appliquer la configuration.",code:`sudo netplan apply
+ip a                    # vérifie la nouvelle IP`},
+],note:"En YAML, <b>l'indentation se fait en espaces</b> (jamais de tabulation), sinon <code>netplan apply</code> renvoie une erreur de parsing."},
+
+{id:"lx4",cat:"linux",title:"Configurer le pare-feu UFW",badge:"sécurité",summary:"Ouvrir uniquement les ports nécessaires (SSH, HTTP, MQTT…).",tags:["ufw","firewall","pare-feu","ports","ssh"],steps:[
+  {t:"Toujours autoriser SSH AVANT d'activer (sinon tu te coupes l'accès).",code:`sudo ufw allow 22/tcp           # ou: sudo ufw allow OpenSSH`},
+  {t:"Ouvrir les ports utiles à l'architecture.",code:`sudo ufw allow 80/tcp           # HTTP (Apache)
+sudo ufw allow 443/tcp          # HTTPS
+sudo ufw allow 1883/tcp         # MQTT (Mosquitto)
+sudo ufw allow 3306/tcp         # MySQL (si accès distant)`},
+  {t:"Activer le pare-feu et vérifier les règles.",code:`sudo ufw enable
+sudo ufw status numbered`},
+  {t:"Supprimer une règle si besoin.",code:`sudo ufw status numbered        # repère le numéro
+sudo ufw delete 3`},
+],note:"<b>Piège classique :</b> activer UFW sans autoriser le port 22 te déconnecte du serveur. Ouvre toujours SSH en premier."},
+
+{id:"lx5",cat:"linux",title:"Installer une stack LAMP complète",badge:"lamp",summary:"Linux + Apache + MySQL + PHP en quelques commandes.",tags:["lamp","apache","mysql","php","install"],steps:[
+  {t:"Mettre à jour les paquets.",code:`sudo apt update && sudo apt upgrade -y`},
+  {t:"Installer Apache.",code:`sudo apt install apache2 -y
+sudo systemctl enable --now apache2`},
+  {t:"Installer MySQL (ou MariaDB).",code:`sudo apt install mysql-server -y
+sudo mysql_secure_installation`},
+  {t:"Installer PHP et le module Apache + MySQL.",code:`sudo apt install php libapache2-mod-php php-mysql -y
+sudo systemctl restart apache2`},
+  {t:"Tester PHP avec un fichier info.",code:`echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
+# Ouvre http://IP_DU_SERVEUR/info.php dans un navigateur`},
+],note:"Pense à <b>supprimer info.php</b> après le test : il expose la configuration du serveur."},
+
+/* ---------------- WEB ---------------- */
+{id:"wb1",cat:"web",title:"Installer et vérifier Apache2",badge:"apache",summary:"Mettre en service le serveur web et tester la page par défaut.",tags:["apache2","httpd","install","web"],steps:[
+  {t:"Installer et démarrer Apache.",code:`sudo apt install apache2 -y
+sudo systemctl enable --now apache2
+systemctl status apache2`},
+  {t:"Tester depuis un navigateur.",code:`# Ouvre http://localhost ou http://IP_DU_SERVEUR
+# La page "Apache2 Ubuntu Default Page" doit s'afficher`},
+  {t:"Connaître les dossiers clés.",code:`/var/www/html              # racine web par défaut
+/etc/apache2/sites-available/   # définitions des sites
+/etc/apache2/sites-enabled/     # sites actifs (liens)
+/var/log/apache2/          # logs access.log / error.log`},
+]},
+
+{id:"wb2",cat:"web",title:"Créer un VirtualHost (www.dashboard.local)",badge:"vhost",summary:"Héberger plusieurs sites par nom de domaine sur le même serveur.",tags:["virtualhost","vhost","servername","sites-enabled","a2ensite"],steps:[
+  {t:"Créer le dossier du site et une page de test.",code:`sudo mkdir -p /var/www/dashboard
+echo "<h1>Dashboard OK</h1>" | sudo tee /var/www/dashboard/index.html`},
+  {t:"Créer le fichier de configuration du VirtualHost.",code:`sudo nano /etc/apache2/sites-available/dashboard.conf`},
+  {t:"Définir le ServerName et la racine.",code:`<VirtualHost *:80>
+    ServerName www.dashboard.local
+    DocumentRoot /var/www/dashboard
+    <Directory /var/www/dashboard>
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog \${APACHE_LOG_DIR}/dashboard_error.log
+</VirtualHost>`},
+  {t:"Activer le site et recharger Apache.",code:`sudo a2ensite dashboard.conf
+sudo systemctl reload apache2`},
+  {t:"Faire pointer le nom vers le serveur (sur la machine cliente).",code:`# Éditer /etc/hosts (Linux/Mac) ou C:\\Windows\\System32\\drivers\\etc\\hosts
+192.168.1.50   www.dashboard.local`},
+],note:"Si le site affiche encore la page Apache par défaut, vérifie que <code>ServerName</code> correspond exactement à l'URL tapée et que le nom est bien résolu dans <b>/etc/hosts</b>."},
+
+{id:"wb3",cat:"web",title:"Résolution de noms locaux (/etc/hosts)",badge:"dns",summary:"Faire correspondre un nom de domaine à une IP sans serveur DNS.",tags:["hosts","dns","résolution","local","ping"],steps:[
+  {t:"Ouvrir le fichier hosts.",code:`sudo nano /etc/hosts`},
+  {t:"Ajouter les correspondances nom → IP.",code:`192.168.1.50   www.nuc.local
+192.168.1.50   www.dashboard.local`},
+  {t:"Vérifier que le nom répond.",code:`ping www.dashboard.local`},
+],note:"Le fichier <b>/etc/hosts</b> est prioritaire sur le DNS. C'est la méthode la plus simple en réseau local sans serveur DNS."},
+
+{id:"wb4",cat:"web",title:"Configurer PHP avec Apache",badge:"php",summary:"Activer l'exécution PHP et lire/modifier les directives importantes.",tags:["php","mod-php","php.ini","apache"],steps:[
+  {t:"Installer le module PHP pour Apache.",code:`sudo apt install php libapache2-mod-php -y
+sudo systemctl restart apache2`},
+  {t:"Vérifier que PHP s'exécute (et n'est pas téléchargé).",code:`echo "<?php echo 'PHP version : '.phpversion(); ?>" | sudo tee /var/www/html/test.php
+# Ouvre http://localhost/test.php`},
+  {t:"Localiser et modifier le php.ini si besoin.",code:`php --ini                       # chemin du php.ini chargé
+sudo nano /etc/php/8.x/apache2/php.ini
+# ex: display_errors = On  (utile en dev pour voir les erreurs)`},
+],note:"Si PHP s'affiche en texte brut au lieu d'être exécuté, le module n'est pas chargé : réinstalle <code>libapache2-mod-php</code> puis redémarre Apache."},
+
+/* ---------------- DB ---------------- */
+{id:"db1",cat:"db",title:"Installer et sécuriser MySQL",badge:"mysql",summary:"Mettre en place le serveur de base et durcir la configuration.",tags:["mysql","mariadb","install","secure","root"],steps:[
+  {t:"Installer le serveur.",code:`sudo apt install mysql-server -y
+sudo systemctl enable --now mysql`},
+  {t:"Lancer l'assistant de sécurisation.",code:`sudo mysql_secure_installation
+# -> définir un mot de passe root, retirer les comptes anonymes,
+#    interdire le login root distant, supprimer la base de test`},
+  {t:"Se connecter au shell MySQL.",code:`sudo mysql -u root -p`},
+],note:"Sous Ubuntu récent, le compte root MySQL utilise par défaut l'auth <b>socket</b> : <code>sudo mysql</code> suffit. Crée un utilisateur dédié pour ton application plutôt que d'utiliser root."},
+
+{id:"db2",cat:"db",title:"Créer des utilisateurs et gérer les droits",badge:"droits",summary:"Compte applicatif avec privilèges limités sur une base précise.",tags:["user","grant","privileges","password","mysql"],steps:[
+  {t:"Créer un utilisateur dédié.",code:`CREATE USER 'iot_app'@'localhost' IDENTIFIED BY 'MotDePasseFort!';`},
+  {t:"Accorder les droits sur une base précise seulement.",code:`GRANT SELECT, INSERT, UPDATE, DELETE
+ON supervision.* TO 'iot_app'@'localhost';
+FLUSH PRIVILEGES;`},
+  {t:"Pour un accès depuis une autre machine (ex : backend distant).",code:`CREATE USER 'iot_app'@'192.168.1.%' IDENTIFIED BY 'MotDePasseFort!';
+GRANT ALL ON supervision.* TO 'iot_app'@'192.168.1.%';
+FLUSH PRIVILEGES;`},
+  {t:"Vérifier les droits d'un utilisateur.",code:`SHOW GRANTS FOR 'iot_app'@'localhost';`},
+],note:"Le <b>@'localhost'</b> et <b>@'%'</b> font partie de l'identité de l'utilisateur. Un user créé en localhost ne pourra pas se connecter depuis une autre IP."},
+
+{id:"db3",cat:"db",title:"Créer une base depuis un script SQL",badge:"sql",summary:"Importer un schéma et des données via un fichier .sql.",tags:["script","sql","import","create table","source"],steps:[
+  {t:"Écrire le script (exemple supervision.sql).",code:`CREATE DATABASE IF NOT EXISTS supervision
+  CHARACTER SET utf8mb4;
+USE supervision;
+
+CREATE TABLE mesures (
+  id        INT AUTO_INCREMENT PRIMARY KEY,
+  capteur   VARCHAR(50) NOT NULL,
+  type      VARCHAR(30) NOT NULL,
+  valeur    FLOAT NOT NULL,
+  date_mesure DATETIME DEFAULT CURRENT_TIMESTAMP
+);`},
+  {t:"Importer le script depuis le terminal.",code:`sudo mysql -u root -p < supervision.sql`},
+  {t:"Ou depuis l'intérieur du shell MySQL.",code:`mysql> SOURCE /chemin/vers/supervision.sql;`},
+  {t:"Vérifier le résultat.",code:`SHOW DATABASES;
+USE supervision;
+SHOW TABLES;
+DESCRIBE mesures;`},
+]},
+
+{id:"db4",cat:"db",title:"Se connecter à MySQL en PDO (PHP)",badge:"pdo",summary:"Connexion sécurisée et requêtes préparées depuis le dashboard.",tags:["pdo","php","connexion","prepare","requête"],steps:[
+  {t:"Ouvrir une connexion PDO.",code:`<?php
+$dsn = "mysql:host=localhost;dbname=supervision;charset=utf8mb4";
+try {
+    $pdo = new PDO($dsn, "iot_app", "MotDePasseFort!");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Connexion échouée : " . $e->getMessage());
+}`},
+  {t:"Lire des données (requête préparée).",code:`$stmt = $pdo->query("SELECT * FROM mesures ORDER BY date_mesure DESC LIMIT 20");
+$lignes = $stmt->fetchAll(PDO::FETCH_ASSOC);`},
+  {t:"Insérer en se protégeant des injections SQL.",code:`$req = $pdo->prepare(
+  "INSERT INTO mesures (capteur, type, valeur) VALUES (?, ?, ?)"
+);
+$req->execute(["m5-salle1", "temperature", 23.4]);`},
+],note:"Utilise <b>toujours</b> des requêtes préparées (<code>prepare()</code> + <code>execute()</code>) avec des paramètres : c'est la protection de base contre les injections SQL."},
+
+{id:"db5",cat:"db",title:"Connexion avec dBeaver",badge:"dbeaver",summary:"Explorer la base graphiquement et tester les requêtes.",tags:["dbeaver","gui","connexion","client","sql"],steps:[
+  {t:"Nouvelle connexion → choisir MySQL.",code:`Database > New Connection > MySQL`},
+  {t:"Renseigner les paramètres.",code:`Host      : 192.168.1.50   (ou localhost)
+Port      : 3306
+Database  : supervision
+Username  : iot_app
+Password  : MotDePasseFort!`},
+  {t:"Si erreur \"Public Key Retrieval\" ou SSL.",code:`Driver properties > allowPublicKeyRetrieval = true
+                  > useSSL = false`},
+],note:"Pour un accès distant, MySQL doit écouter sur le réseau : dans <code>/etc/mysql/mysql.conf.d/mysqld.cnf</code> mets <b>bind-address = 0.0.0.0</b>, puis ouvre le port 3306 dans UFW."},
+
+/* ---------------- MQTT ---------------- */
+{id:"mq1",cat:"mqtt",title:"Comprendre le protocole MQTT",badge:"concept",summary:"Publish/Subscribe, topics, QoS et rôle du broker.",tags:["mqtt","publish","subscribe","topic","qos","broker"],steps:[
+  {t:"Le principe publish / subscribe.",code:`Un PUBLISHER envoie un message sur un TOPIC.
+Le BROKER reçoit et redistribue.
+Les SUBSCRIBERS abonnés à ce topic reçoivent le message.
+-> Les capteurs ne se connaissent pas entre eux : tout passe par le broker.`},
+  {t:"La structure d'un topic (hiérarchique).",code:`salle1/temperature
+salle1/humidite
+salle2/co2
+# Wildcards à l'abonnement :
+salle1/#     -> tout ce qui commence par salle1/
+salle1/+     -> un seul niveau (temperature, humidite...)`},
+  {t:"Les niveaux de qualité de service (QoS).",code:`QoS 0 : au plus une fois (rapide, pas de garantie)
+QoS 1 : au moins une fois (peut dupliquer)
+QoS 2 : exactement une fois (le plus fiable, le plus lent)`},
+],note:"Dans l'architecture : le <b>M5Stack publie</b> les mesures, le <b>broker Mosquitto</b> les relaie, et le <b>backend C++ s'abonne</b> puis insère en base."},
+
+{id:"mq2",cat:"mqtt",title:"Installer le broker Mosquitto",badge:"mosquitto",summary:"Mettre en service le broker et les outils clients.",tags:["mosquitto","install","broker","1883","service"],steps:[
+  {t:"Installer le broker et les clients.",code:`sudo apt install mosquitto mosquitto-clients -y`},
+  {t:"Activer et démarrer le service.",code:`sudo systemctl enable --now mosquitto
+systemctl status mosquitto`},
+  {t:"Vérifier que le broker écoute bien sur le port 1883.",code:`sudo ss -tlnp | grep 1883`},
+  {t:"Test rapide en local (2 terminaux).",code:`# Terminal 1 (abonné)
+mosquitto_sub -h localhost -t test/topic
+# Terminal 2 (publieur)
+mosquitto_pub -h localhost -t test/topic -m "Hello"`},
+]},
+
+{id:"mq3",cat:"mqtt",title:"Sécuriser Mosquitto par mot de passe",badge:"sécurité",summary:"Désactiver l'accès anonyme et exiger une authentification.",tags:["mosquitto","password","auth","sécurité","conf"],steps:[
+  {t:"Créer un fichier de mots de passe.",code:`sudo mosquitto_passwd -c /etc/mosquitto/passwd iot_user
+# (saisir le mot de passe deux fois)`},
+  {t:"Créer/éditer la configuration.",code:`sudo nano /etc/mosquitto/conf.d/default.conf`},
+  {t:"Interdire l'anonyme et pointer le fichier passwd.",code:`listener 1883
+allow_anonymous false
+password_file /etc/mosquitto/passwd`},
+  {t:"Redémarrer et tester avec identifiants.",code:`sudo systemctl restart mosquitto
+mosquitto_sub -h localhost -t test/# -u iot_user -P monmotdepasse`},
+],note:"Pour <b>ajouter</b> un utilisateur sans écraser le fichier, n'utilise PAS l'option <code>-c</code> : <code>sudo mosquitto_passwd /etc/mosquitto/passwd autre_user</code>."},
+
+{id:"mq4",cat:"mqtt",title:"Utiliser les clients mosquitto_pub / sub",badge:"clients",summary:"Publier et s'abonner en ligne de commande pour tester.",tags:["mosquitto_pub","mosquitto_sub","cli","test","topic"],steps:[
+  {t:"S'abonner à un topic (et voir arriver les messages).",code:`mosquitto_sub -h localhost -t "salle1/#" -v
+# -v affiche aussi le nom du topic`},
+  {t:"Publier une valeur.",code:`mosquitto_pub -h localhost -t "salle1/temperature" -m "23.5"`},
+  {t:"Avec authentification.",code:`mosquitto_sub -h 192.168.1.50 -t "salle1/#" -u iot_user -P pass -v`},
+  {t:"Publier le contenu d'un fichier (utile pour du JSON).",code:`mosquitto_pub -h localhost -t "salle1/data" -f mesure.json`},
+]},
+
+{id:"mq5",cat:"mqtt",title:"Écrire un script de test MQTT",badge:"test",summary:"Simuler un capteur qui publie en boucle pour valider la chaîne.",tags:["script","bash","test","simulation","capteur"],steps:[
+  {t:"Script bash qui publie une mesure aléatoire toutes les 2s.",code:`#!/bin/bash
+# fichier: simulateur.sh
+HOST="localhost"
+TOPIC="salle1/temperature"
+while true; do
+  VAL=$(( RANDOM % 10 + 20 ))   # entre 20 et 29
+  mosquitto_pub -h $HOST -t $TOPIC -m "$VAL"
+  echo "Publié : $VAL"
+  sleep 2
+done`},
+  {t:"Rendre exécutable et lancer.",code:`chmod +x simulateur.sh
+./simulateur.sh`},
+  {t:"Dans un autre terminal, vérifier la réception.",code:`mosquitto_sub -h localhost -t "salle1/temperature" -v`},
+],note:"Ce simulateur permet de tester <b>tout le reste de la chaîne</b> (backend + base + dashboard) sans avoir le M5Stack branché."},
+
+{id:"mq6",cat:"mqtt",title:"Utiliser MQTT Explorer",badge:"outil",summary:"Visualiser graphiquement les topics et messages du broker.",tags:["mqtt explorer","gui","debug","topics","visualisation"],steps:[
+  {t:"Créer une connexion.",code:`Host : 192.168.1.50   (IP du broker)
+Port : 1883
+Username / Password : iot_user / monmotdepasse  (si sécurisé)`},
+  {t:"Observer l'arborescence des topics qui se remplit en temps réel.",code:`# MQTT Explorer s'abonne à # (tous les topics)
+# et affiche la hiérarchie : salle1 > temperature, humidite...`},
+  {t:"Publier manuellement pour tester un abonné.",code:`# Panneau "Publish" : topic + payload + bouton Publish`},
+],note:"MQTT Explorer est l'outil idéal pour <b>vérifier que le M5Stack publie bien</b> : si rien n'apparaît, le problème est en amont (WiFi, identifiants, topic)."},
+
+/* ---------------- BACKEND C++ ---------------- */
+{id:"cp1",cat:"backend",title:"Compiler du C++ avec g++",badge:"g++",summary:"Du fichier source à l'exécutable, avec les bons flags.",tags:["g++","gcc","compilation","exécutable","c++"],steps:[
+  {t:"Compiler un fichier simple.",code:`g++ main.cpp -o backend
+./backend`},
+  {t:"Compiler plusieurs fichiers (projet POO).",code:`g++ main.cpp Capteur.cpp Mesure.cpp -o backend`},
+  {t:"Avec une bibliothèque externe (ex : mosquitto et mysql).",code:`g++ main.cpp -o backend -lmosquitto -lmysqlclient`},
+  {t:"Activer les warnings et le standard C++17.",code:`g++ -std=c++17 -Wall main.cpp -o backend`},
+],note:"L'option <b>-l</b> (link) ajoute une bibliothèque. Une erreur « undefined reference » signifie généralement qu'il manque un <code>-lxxx</code> à l'édition de liens."},
+
+{id:"cp2",cat:"backend",title:"Automatiser la compilation avec un Makefile",badge:"make",summary:"Recompiler tout le projet d'une seule commande.",tags:["make","makefile","compilation","cible","build"],steps:[
+  {t:"Créer un fichier nommé exactement Makefile.",code:`CC = g++
+CFLAGS = -std=c++17 -Wall
+LIBS = -lmosquitto -lmysqlclient
+OBJ = main.o Capteur.o Mesure.o
+
+backend: $(OBJ)
+	$(CC) $(OBJ) -o backend $(LIBS)
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f *.o backend`},
+  {t:"Compiler.",code:`make            # construit la cible 'backend'`},
+  {t:"Nettoyer les fichiers générés.",code:`make clean`},
+],note:"<b>Piège :</b> dans un Makefile l'indentation des commandes se fait avec une <b>tabulation</b>, jamais des espaces, sinon erreur « missing separator »."},
+
+{id:"cp3",cat:"backend",title:"Programmation orientée objet (POO)",badge:"poo",summary:"Classe, attributs, méthodes, encapsulation en C++.",tags:["poo","classe","objet","encapsulation","c++"],steps:[
+  {t:"Déclarer une classe (Capteur.h).",code:`#ifndef CAPTEUR_H
+#define CAPTEUR_H
+#include <string>
+
+class Capteur {
+private:
+    std::string nom;
+    float valeur;
+public:
+    Capteur(std::string n);        // constructeur
+    void setValeur(float v);       // setter
+    float getValeur() const;       // getter
+    std::string getNom() const;
+};
+#endif`},
+  {t:"Implémenter la classe (Capteur.cpp).",code:`#include "Capteur.h"
+
+Capteur::Capteur(std::string n) : nom(n), valeur(0) {}
+void Capteur::setValeur(float v) { valeur = v; }
+float Capteur::getValeur() const { return valeur; }
+std::string Capteur::getNom() const { return nom; }`},
+  {t:"Utiliser l'objet (main.cpp).",code:`#include "Capteur.h"
+#include <iostream>
+
+int main() {
+    Capteur t("temperature");
+    t.setValeur(23.5);
+    std::cout << t.getNom() << " = " << t.getValeur() << std::endl;
+    return 0;
+}`},
+],note:"<b>Encapsulation :</b> les attributs sont <code>private</code>, on y accède via des méthodes publiques (getters/setters). C'est un point souvent évalué."},
+
+{id:"cp4",cat:"backend",title:"Lire un diagramme de classes UML",badge:"uml",summary:"Traduire un diagramme en code et inversement.",tags:["uml","diagramme","classe","relation","association"],steps:[
+  {t:"Anatomie d'une classe UML.",code:`+------------------------+
+|        Capteur         |   <- nom de la classe
++------------------------+
+| - nom : string         |   <- attributs ( - = private )
+| - valeur : float       |
++------------------------+
+| + getValeur() : float  |   <- méthodes ( + = public )
+| + setValeur(v:float)   |
++------------------------+`},
+  {t:"Visibilité des membres.",code:`+  public      (accessible partout)
+-  private     (interne à la classe)
+#  protected   (classe + classes filles)`},
+  {t:"Relations entre classes.",code:`Association  : --------  (une classe utilise l'autre)
+Héritage     : ----▷    (Mesure ----▷ Capteur : "est un")
+Composition  : ◆------   (le tout possède la partie)
+Cardinalité  : 1 ..... *  (un broker pour plusieurs capteurs)`},
+],note:"Sur un sujet, on peut te demander de <b>coder une classe à partir de son UML</b> : le <code>-</code> devient <code>private</code>, le <code>+</code> devient <code>public</code>, et les paramètres/types sont donnés directement."},
+
+{id:"cp5",cat:"backend",title:"Client MQTT en C++ (libmosquitto)",badge:"mqtt",summary:"S'abonner à un topic et récupérer les messages côté backend.",tags:["mosquitto","c++","subscribe","callback","backend"],steps:[
+  {t:"Installer la bibliothèque de développement.",code:`sudo apt install libmosquitto-dev -y`},
+  {t:"S'abonner et traiter les messages reçus.",code:`#include <mosquitto.h>
+#include <cstring>
+#include <iostream>
+
+void on_message(struct mosquitto *m, void *u,
+                const struct mosquitto_message *msg) {
+    std::cout << "Topic: " << msg->topic
+              << " | Valeur: " << (char*)msg->payload << std::endl;
+    // -> ici : insérer en base MySQL
+}
+
+int main() {
+    mosquitto_lib_init();
+    struct mosquitto *mosq = mosquitto_new(nullptr, true, nullptr);
+    mosquitto_message_callback_set(mosq, on_message);
+    mosquitto_connect(mosq, "localhost", 1883, 60);
+    mosquitto_subscribe(mosq, nullptr, "salle1/#", 0);
+    mosquitto_loop_forever(mosq, -1, 1);   // boucle bloquante
+    mosquitto_destroy(mosq);
+    mosquitto_lib_cleanup();
+    return 0;
+}`},
+  {t:"Compiler avec le lien vers la lib.",code:`g++ main.cpp -o backend -lmosquitto`},
+],note:"La fonction <b>callback</b> <code>on_message</code> est appelée automatiquement à chaque message reçu : c'est là qu'on déclenche l'insertion en base."},
+
+{id:"cp6",cat:"backend",title:"Insérer dans MySQL depuis le C++",badge:"mysql",summary:"Connecter le backend à la base et écrire les mesures.",tags:["mysql","c++","connector","insert","libmysqlclient"],steps:[
+  {t:"Installer le connecteur de développement.",code:`sudo apt install libmysqlclient-dev -y`},
+  {t:"Se connecter et exécuter une requête.",code:`#include <mysql/mysql.h>
+#include <iostream>
+
+int main() {
+    MYSQL *con = mysql_init(nullptr);
+    if (!mysql_real_connect(con, "localhost", "iot_app",
+            "MotDePasseFort!", "supervision", 0, nullptr, 0)) {
+        std::cerr << mysql_error(con) << std::endl;
+        return 1;
+    }
+    const char* req =
+      "INSERT INTO mesures(capteur,type,valeur) "
+      "VALUES('m5-salle1','temperature',23.5)";
+    if (mysql_query(con, req))
+        std::cerr << mysql_error(con) << std::endl;
+    mysql_close(con);
+    return 0;
+}`},
+  {t:"Compiler.",code:`g++ main.cpp -o backend $(mysql_config --cflags --libs)`},
+],note:"En production, on construit la requête à partir des valeurs reçues par MQTT : pense à <b>échapper / valider</b> les données pour éviter les injections SQL."},
+
+/* ---------------- EMBEDDED ---------------- */
+{id:"em1",cat:"embedded",title:"Configurer Arduino IDE pour le M5Stack",badge:"arduino",summary:"Installer le support ESP32 et la librairie M5Stack.",tags:["arduino","esp32","m5stack","ide","board"],steps:[
+  {t:"Ajouter l'URL des cartes ESP32.",code:`Fichier > Préférences > URL de gestionnaire de cartes :
+https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`},
+  {t:"Installer le paquet de cartes.",code:`Outils > Type de carte > Gestionnaire de cartes
+-> rechercher "esp32" et installer`},
+  {t:"Installer la librairie M5Stack.",code:`Croquis > Inclure une bibliothèque > Gérer les bibliothèques
+-> rechercher "M5Stack" (ou M5Core2 / M5Unified selon le modèle)`},
+  {t:"Sélectionner la carte et le port.",code:`Outils > Type de carte > M5Stack-Core-ESP32
+Outils > Port > /dev/ttyUSB0 (ou COMx sous Windows)`},
+],note:"Si le port n'apparaît pas, il manque souvent le <b>driver USB-série CP210x ou CH9102</b> : à installer selon la puce du M5Stack."},
+
+{id:"em2",cat:"embedded",title:"Brancher et lire un capteur Grove",badge:"grove",summary:"Utiliser le port Grove du M5Stack avec un capteur I2C.",tags:["grove","capteur","i2c","wire","port"],steps:[
+  {t:"Brancher le capteur sur le port Grove (rouge = port A).",code:`// Le port Grove A du M5Stack expose I2C sur les broches 21 (SDA) / 22 (SCL)`},
+  {t:"Initialiser le bus I2C et le capteur (exemple ENV).",code:`#include <M5Stack.h>
+#include "M5_ENV.h"
+SHT3X sht30;
+QMP6988 qmp;
+
+void setup() {
+  M5.begin();
+  Wire.begin();           // démarre l'I2C
+  qmp.init();
+}`},
+  {t:"Lire les valeurs dans la boucle.",code:`void loop() {
+  sht30.get();
+  float temp = sht30.cTemp;
+  float hum  = sht30.humidity;
+  M5.Lcd.setCursor(0, 20);
+  M5.Lcd.printf("Temp: %.1f C  Hum: %.1f %%", temp, hum);
+  delay(2000);
+}`},
+],note:"Scanner l'adresse I2C avec un sketch « I2C scanner » aide à confirmer que le capteur est bien détecté avant d'écrire le code de lecture."},
+
+{id:"em3",cat:"embedded",title:"Connecter l'ESP32 au WiFi",badge:"wifi",summary:"Rejoindre le point d'accès du réseau de supervision.",tags:["wifi","esp32","wifi.h","connexion","réseau"],steps:[
+  {t:"Inclure la librairie et définir les identifiants.",code:`#include <WiFi.h>
+const char* ssid     = "MonReseauWiFi";
+const char* password = "MotDePasseWiFi";`},
+  {t:"Se connecter dans le setup.",code:`void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500); Serial.print(".");
+  }
+  Serial.println("\\nConnecté ! IP : " + WiFi.localIP().toString());
+}`},
+],note:"L'ESP32 ne gère que le <b>WiFi 2,4 GHz</b>. S'il ne se connecte pas, vérifie que le point d'accès n'est pas en 5 GHz uniquement et que le SSID/mot de passe sont exacts."},
+
+{id:"em4",cat:"embedded",title:"Publier des données en MQTT depuis le M5Stack",badge:"mqtt",summary:"Envoyer les mesures du capteur vers le broker Mosquitto.",tags:["pubsubclient","mqtt","publish","esp32","broker"],steps:[
+  {t:"Installer la librairie PubSubClient (gestionnaire de bibliothèques).",code:`// Croquis > Inclure une bibliothèque > Gérer les bibliothèques
+// -> rechercher "PubSubClient" (Nick O'Leary)`},
+  {t:"Configurer le client MQTT.",code:`#include <WiFi.h>
+#include <PubSubClient.h>
+WiFiClient espClient;
+PubSubClient client(espClient);
+const char* broker = "192.168.1.50";`},
+  {t:"Se connecter au broker (avec identifiants).",code:`void reconnect() {
+  while (!client.connected()) {
+    if (client.connect("m5-salle1", "iot_user", "monmotdepasse")) {
+      Serial.println("MQTT connecté");
+    } else { delay(2000); }
+  }
+}
+
+void setup() {
+  // ... WiFi ...
+  client.setServer(broker, 1883);
+}`},
+  {t:"Publier la mesure dans la boucle.",code:`void loop() {
+  if (!client.connected()) reconnect();
+  client.loop();
+  float temp = 23.5;                  // valeur du capteur
+  char buf[10];
+  dtostrf(temp, 4, 1, buf);           // float -> chaîne
+  client.publish("salle1/temperature", buf);
+  delay(2000);
+}`},
+],note:"Le 1er argument de <code>connect()</code> est l'<b>identifiant client</b> : il doit être <b>unique</b> par appareil, sinon les M5Stack se déconnectent mutuellement du broker."},
+
+{id:"em5",cat:"embedded",title:"Lire un capteur radar LD2410",badge:"radar",summary:"Détection de présence via UART sur le M5Stack.",tags:["ld2410","radar","présence","uart","capteur"],steps:[
+  {t:"Câbler le capteur en UART (TX/RX croisés).",code:`LD2410 TX -> ESP32 RX
+LD2410 RX -> ESP32 TX
+LD2410 GND -> GND   |   LD2410 VCC -> 5V`},
+  {t:"Initialiser la liaison série matérielle.",code:`#include <HardwareSerial.h>
+HardwareSerial radarSerial(2);   // UART2
+
+void setup() {
+  Serial.begin(115200);
+  radarSerial.begin(256000, SERIAL_8N1, 16, 17);  // RX=16, TX=17
+}`},
+  {t:"Lire l'état de présence (avec une librairie LD2410).",code:`// Avec la lib "ld2410" :
+if (radar.presenceDetected()) {
+  client.publish("salle1/presence", "1");
+} else {
+  client.publish("salle1/presence", "0");
+}`},
+],note:"Le LD2410 communique en UART à un débit élevé (256000 bauds par défaut). Vérifie ce débit et le bon croisement TX/RX si tu ne reçois rien."},
+
+/* ---------------- PHP DASHBOARD ---------------- */
+{id:"ph1",cat:"php",title:"Bases PHP + HTML",badge:"php",summary:"Mélanger logique PHP et structure HTML dans une page.",tags:["php","html","variables","boucle","echo"],steps:[
+  {t:"Variables, conditions, affichage.",code:`<?php
+$titre = "Supervision salle serveur";
+$temp = 24.2;
+?>
+<h1><?= $titre ?></h1>
+<p>Température : <?= $temp ?> °C
+  <?php if ($temp > 27): ?>
+    <strong style="color:red">ALERTE</strong>
+  <?php endif; ?>
+</p>`},
+  {t:"Boucle pour afficher une liste.",code:`<ul>
+<?php foreach (["temperature","humidite","co2"] as $type): ?>
+  <li><?= htmlspecialchars($type) ?></li>
+<?php endforeach; ?>
+</ul>`},
+],note:"<code>&lt;?= $x ?&gt;</code> est un raccourci de <code>&lt;?php echo $x; ?&gt;</code>. Pense à <b>htmlspecialchars()</b> pour tout ce qui vient de la base ou de l'utilisateur."},
+
+{id:"ph2",cat:"php",title:"Afficher les données MySQL dans un tableau",badge:"dashboard",summary:"Lire les dernières mesures et les présenter proprement.",tags:["pdo","tableau","mysql","dashboard","fetch"],steps:[
+  {t:"Récupérer les données via PDO.",code:`<?php
+$pdo = new PDO("mysql:host=localhost;dbname=supervision;charset=utf8mb4",
+               "iot_app", "MotDePasseFort!");
+$stmt = $pdo->query(
+  "SELECT capteur, type, valeur, date_mesure
+   FROM mesures ORDER BY date_mesure DESC LIMIT 20");
+$mesures = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>`},
+  {t:"Construire le tableau HTML.",code:`<table border="1">
+  <tr><th>Capteur</th><th>Type</th><th>Valeur</th><th>Date</th></tr>
+  <?php foreach ($mesures as $m): ?>
+  <tr>
+    <td><?= htmlspecialchars($m['capteur']) ?></td>
+    <td><?= htmlspecialchars($m['type']) ?></td>
+    <td><?= $m['valeur'] ?></td>
+    <td><?= $m['date_mesure'] ?></td>
+  </tr>
+  <?php endforeach; ?>
+</table>`},
+]},
+
+{id:"ph3",cat:"php",title:"Affichage temps réel (auto-refresh / AJAX)",badge:"temps réel",summary:"Mettre à jour le dashboard sans recharger toute la page.",tags:["ajax","temps réel","fetch","json","refresh"],steps:[
+  {t:"Solution simple : rafraîchir la page périodiquement.",code:`<!-- recharge toute la page toutes les 5 secondes -->
+<meta http-equiv="refresh" content="5">`},
+  {t:"Solution propre : une API PHP qui renvoie du JSON (api.php).",code:`<?php
+header('Content-Type: application/json');
+$pdo = new PDO("mysql:host=localhost;dbname=supervision","iot_app","MotDePasseFort!");
+$data = $pdo->query("SELECT type, valeur FROM mesures
+                     ORDER BY date_mesure DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+echo json_encode($data);`},
+  {t:"Côté page, mettre à jour en JavaScript.",code:`<div id="zone"><\/div>
+<scr`+`ipt>
+async function maj() {
+  const r = await fetch('api.php');
+  const data = await r.json();
+  document.getElementById('zone').textContent = JSON.stringify(data);
+}
+setInterval(maj, 3000);   // toutes les 3 s
+maj();
+<\/scr`+`ipt>`},
+],note:"L'approche <b>AJAX + JSON</b> est plus fluide que le rechargement complet : seule la zone de données est mise à jour."},
+
+{id:"ph4",cat:"php",title:"Tester un site web",badge:"test",summary:"Vérifier l'accès, les erreurs et le bon rendu des pages.",tags:["test","debug","logs","navigateur","erreur"],steps:[
+  {t:"Vérifier l'accès depuis le navigateur.",code:`http://www.dashboard.local
+http://192.168.1.50/dashboard`},
+  {t:"Activer l'affichage des erreurs PHP (en dev).",code:`<?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);`},
+  {t:"Consulter les logs en cas de page blanche.",code:`sudo tail -f /var/log/apache2/error.log`},
+  {t:"Tester une réponse HTTP en ligne de commande.",code:`curl -I http://localhost/dashboard   # voir le code (200, 403, 404...)`},
+],note:"Une <b>page blanche</b> en PHP = presque toujours une erreur fatale non affichée : active <code>display_errors</code> ou lis directement <b>error.log</b>."},
+
+/* ---------------- DEBUG ---------------- */
+{id:"dg1",cat:"debug",title:"Le M5Stack ne se connecte pas au broker MQTT",badge:"dépannage",summary:"La publication échoue ou rien n'arrive sur le broker.",tags:["mqtt","connexion","m5stack","mosquitto","problème","ne marche pas"],steps:[
+  {t:"Vérifier que l'ESP32 est bien connecté au WiFi (Serial Monitor).",code:`// Tu dois voir "Connecté ! IP : 192.168.1.xx"
+// Sinon -> problème WiFi (SSID/mdp/2.4GHz), pas MQTT`},
+  {t:"Vérifier que le broker est joignable depuis le réseau.",code:`# Depuis un PC du même réseau :
+mosquitto_sub -h 192.168.1.50 -t "#" -v -u iot_user -P pass`},
+  {t:"Contrôler les 3 causes les plus fréquentes.",code:`1. Mauvaise IP du broker dans le code (broker = "192.168.1.50")
+2. Identifiants MQTT incorrects (allow_anonymous false)
+3. Port 1883 fermé par UFW  ->  sudo ufw allow 1883/tcp`},
+  {t:"Vérifier l'unicité de l'identifiant client.",code:`// Deux M5Stack avec le même client ID se déconnectent en boucle.
+// Mets un ID unique par appareil : "m5-salle1", "m5-salle2"...`},
+],note:"Méthode : <b>remonter la chaîne</b> — WiFi OK ? → broker joignable ? → identifiants ? → port ouvert ? Le premier maillon qui casse est la cause."},
+
+{id:"dg2",cat:"debug",title:"Erreur 403 Forbidden sur le site",badge:"dépannage",summary:"Apache refuse l'accès au dossier ou au fichier.",tags:["403","forbidden","apache","droits","permission","erreur"],steps:[
+  {t:"Vérifier les droits et le propriétaire du dossier web.",code:`sudo chown -R www-data:www-data /var/www/dashboard
+sudo chmod -R 755 /var/www/dashboard`},
+  {t:"Vérifier la directive Require dans le VirtualHost.",code:`<Directory /var/www/dashboard>
+    Require all granted
+</Directory>`},
+  {t:"S'assurer qu'un fichier index existe.",code:`ls /var/www/dashboard/   # doit contenir index.php ou index.html`},
+  {t:"Consulter le log pour le détail.",code:`sudo tail -f /var/log/apache2/error.log`},
+]},
+
+{id:"dg3",cat:"debug",title:"Mon VirtualHost affiche la page Apache par défaut",badge:"dépannage",summary:"Le nom de domaine renvoie le site par défaut au lieu du mien.",tags:["virtualhost","vhost","défaut","servername","a2ensite","erreur"],steps:[
+  {t:"Vérifier que le site est activé.",code:`sudo a2ensite dashboard.conf
+sudo systemctl reload apache2
+ls /etc/apache2/sites-enabled/   # ton .conf doit y être`},
+  {t:"Vérifier que ServerName correspond à l'URL tapée.",code:`# Dans le .conf :  ServerName www.dashboard.local
+# Dans le navigateur tu dois taper exactement la même chose`},
+  {t:"Vérifier la résolution du nom.",code:`ping www.dashboard.local   # doit répondre l'IP du serveur
+# Sinon -> ajouter dans /etc/hosts`},
+  {t:"Désactiver le site par défaut si besoin.",code:`sudo a2dissite 000-default.conf
+sudo systemctl reload apache2`},
+]},
+
+{id:"dg4",cat:"debug",title:"Access denied for user (MySQL)",badge:"dépannage",summary:"Connexion à la base refusée depuis PHP ou en ligne de commande.",tags:["mysql","access denied","connexion","droits","pdo","erreur"],steps:[
+  {t:"Vérifier identifiant, mot de passe et nom de base.",code:`mysql -u iot_app -p   # teste les identifiants à part`},
+  {t:"Vérifier l'hôte autorisé pour l'utilisateur.",code:`-- Un user 'iot_app'@'localhost' ne marche PAS depuis une autre IP.
+SELECT user, host FROM mysql.user WHERE user='iot_app';`},
+  {t:"Recréer/réaccorder les droits si nécessaire.",code:`GRANT ALL ON supervision.* TO 'iot_app'@'localhost';
+FLUSH PRIVILEGES;`},
+  {t:"Pour un accès distant : autoriser l'écoute réseau.",code:`# /etc/mysql/mysql.conf.d/mysqld.cnf
+bind-address = 0.0.0.0
+# puis : sudo systemctl restart mysql  +  ufw allow 3306`},
+]},
+
+{id:"dg5",cat:"debug",title:"L'ESP32 ne se connecte pas au WiFi",badge:"dépannage",summary:"Le M5Stack reste bloqué sur les points de connexion.",tags:["wifi","esp32","connexion","2.4ghz","ssid","erreur"],steps:[
+  {t:"Vérifier le SSID et le mot de passe (sensibles à la casse).",code:`const char* ssid     = "MonReseauWiFi";   // exact
+const char* password = "MotDePasseWiFi";`},
+  {t:"Vérifier que le réseau est bien en 2,4 GHz.",code:`// L'ESP32 ne voit PAS les réseaux 5 GHz.
+// Active une bande 2.4 GHz sur le point d'accès.`},
+  {t:"Ajouter un timeout pour ne pas rester bloqué.",code:`unsigned long t = millis();
+while (WiFi.status() != WL_CONNECTED && millis()-t < 10000) {
+  delay(500); Serial.print(".");
+}`},
+],note:"Un caractère spécial (espace, accent) dans le SSID ou le mot de passe est une cause fréquente d'échec silencieux."},
+
+{id:"dg6",cat:"debug",title:"Plus d'accès au serveur après avoir activé UFW",badge:"dépannage",summary:"Le pare-feu bloque SSH ou le site web.",tags:["ufw","firewall","ssh","bloqué"," port","erreur"],steps:[
+  {t:"Si tu as encore un accès physique/console, autoriser SSH.",code:`sudo ufw allow 22/tcp
+sudo ufw reload`},
+  {t:"Vérifier les règles actuelles.",code:`sudo ufw status verbose`},
+  {t:"Ouvrir les ports manquants.",code:`sudo ufw allow 80/tcp     # site web
+sudo ufw allow 1883/tcp   # MQTT`},
+  {t:"En dernier recours, désactiver le pare-feu pour reprendre la main.",code:`sudo ufw disable`},
+],note:"<b>Règle d'or :</b> autorise toujours le port SSH (22) <u>avant</u> d'activer UFW pour ne pas te verrouiller dehors."},
+
+{id:"dg7",cat:"debug",title:"Aucune donnée n'arrive dans la base",badge:"dépannage",summary:"Le dashboard est vide alors que les capteurs publient.",tags:["données","base","backend","insert","mqtt","vide","erreur"],steps:[
+  {t:"1. Le capteur publie-t-il ? (vérifier sur le broker)",code:`mosquitto_sub -h localhost -t "#" -v
+# Si rien -> problème côté M5Stack (voir fiche dépannage MQTT)`},
+  {t:"2. Le backend reçoit-il les messages ?",code:`# Ajoute un std::cout dans le callback on_message
+# Lance le backend dans un terminal et regarde s'il affiche les valeurs`},
+  {t:"3. L'insertion SQL fonctionne-t-elle ?",code:`# Affiche mysql_error(con) après chaque mysql_query
+# Teste la requête INSERT à la main dans le shell MySQL`},
+  {t:"4. Le dashboard lit-il la bonne base ?",code:`# Vérifie le nom de base, l'utilisateur et la table dans le PDO`},
+],note:"Teste <b>chaque maillon séparément</b> : capteur → broker → backend → base → dashboard. Isoler le maillon défaillant est plus rapide que tout vérifier d'un coup."},
+
+{id:"dg8",cat:"debug",title:"Le code C++ ne compile pas (undefined reference)",badge:"dépannage",summary:"Erreurs de compilation ou d'édition de liens.",tags:["c++","compilation","undefined reference","g++","makefile","erreur"],steps:[
+  {t:"« undefined reference to mosquitto_xxx » -> bibliothèque manquante.",code:`g++ main.cpp -o backend -lmosquitto       # ajoute -lmosquitto
+g++ main.cpp -o backend -lmysqlclient     # ou -lmysqlclient`},
+  {t:"« fatal error: xxx.h: No such file » -> en-têtes de dev manquants.",code:`sudo apt install libmosquitto-dev libmysqlclient-dev`},
+  {t:"« missing separator » dans le Makefile -> tabulation requise.",code:`# Les commandes sous une cible DOIVENT commencer par une TABULATION,
+# pas des espaces.`},
+  {t:"Erreurs de POO -> vérifier les include guards et les .h.",code:`#ifndef CAPTEUR_H
+#define CAPTEUR_H
+// ...
+#endif`},
+],note:"Lis l'erreur <b>du haut vers le bas</b> : la première erreur cause souvent toutes les suivantes. Corrige-la d'abord et recompile."},
+];
+
+/* ============================================================
+   ICÔNES
+============================================================ */
+const ICONS = {
+  terminal:'<polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line>',
+  server:'<rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line>',
+  database:'<ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>',
+  radio:'<circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"></path>',
+  cpu:'<rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line>',
+  chip:'<path d="M4 4h16v16H4z" rx="2"></path><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path><circle cx="12" cy="12" r="3"></circle>',
+  code:'<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>',
+  life:'<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line>',
+};
+function svg(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.code)+'</svg>';}
+
+/* ============================================================
+   ÉTAT & RENDU
+============================================================ */
+const $ = s=>document.querySelector(s);
+const catView=$("#catView"), listView=$("#listView"), hero=$("#hero");
+const guideList=$("#guideList"), emptyState=$("#emptyState"), crumb=$("#crumb");
+let current=null; // catégorie active
+
+function catName(id){return (CATS.find(c=>c.id===id)||{}).name||id;}
+
+// init stats
+$("#stat-cat").textContent=CATS.length;
+$("#stat-guide").textContent=G.length;
+$("#catCount").textContent=G.length+" fiches";
+
+// render category cards
+function renderCats(){
+  guideList&&(guideList.innerHTML="");
+  $("#catGrid").innerHTML = CATS.map((c,i)=>{
+    const n=G.filter(g=>g.cat===c.id).length;
+    return `<button class="cat-card" style="animation-delay:${i*55}ms"
+       onmousemove="this.style.setProperty('--mx',event.offsetX+'px');this.style.setProperty('--my',event.offsetY+'px')"
+       onclick="openCat('${c.id}')">
+      <div class="cat-ico">${svg(c.icon)}</div>
+      <h3>${c.name}</h3>
+      <p>${c.desc}</p>
+      <span class="tag"><b>${n}</b> fiche${n>1?'s':''}</span>
+    </button>`;
+  }).join("");
+}
+
+// escape for safe HTML
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+// highlight matches
+function hl(text,q){
+  if(!q) return text;
+  const re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig");
+  return text.replace(re,"<mark>$1</mark>");
+}
+
+// colorize code (prompts & comments)
+function colorCode(code){
+  return esc(code).split("\n").map(line=>{
+    // comments
+    let l=line.replace(/(#.*$|\/\/.*$|--.*$)/,'<span class="cmt">$1</span>');
+    return l;
+  }).join("\n");
+}
+
+// build one guide accordion item
+function guideHTML(g,q){
+  const stepsHTML = g.steps.map((s,i)=>{
+    let block = `<div class="step"><div class="step-num">${i+1}</div><div class="step-body">
+      <div class="st-text">${s.t}</div>`;
+    if(s.code){
+      block += `<div class="code">
+        <div class="code-top"><span class="code-lang">${g.lang||"shell"}</span>
+        <button class="copy-btn" onclick="copyCode(this)" type="button">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          copier</button></div>
+        <pre><code>${colorCode(s.code)}</code></pre></div>`;
+    }
+    block += `</div></div>`;
+    return block;
+  }).join("");
+
+  const noteHTML = g.note ? `<div class="note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 19h20L12 2z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+    <div>${g.note}</div></div>` : "";
+
+  const tagsHTML = `<div class="tags">${g.tags.map(t=>`<span class="t">#${t}</span>`).join("")}</div>`;
+
+  return `<div class="guide-item" data-id="${g.id}">
+    <div class="gi-head" onclick="toggleGuide(this)">
+      <span class="gi-badge">${g.badge}</span>
+      <div class="gi-main"><h4>${hl(esc(g.title),q)}</h4><p>${hl(esc(g.summary),q)}</p></div>
+      <svg class="gi-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
+    <div class="gi-body">${stepsHTML}${noteHTML}${tagsHTML}</div>
+  </div>`;
+}
+
+function renderGuides(list,q){
+  if(list.length===0){
+    guideList.innerHTML="";emptyState.classList.remove("hidden");return;
+  }
+  emptyState.classList.add("hidden");
+  guideList.innerHTML=list.map(g=>guideHTML(g,q)).join("");
+}
+
+/* ----- navigation ----- */
+function openCat(id){
+  current=id;
+  $("#search").value="";
+  hero.classList.add("hidden");
+  catView.classList.add("hidden");
+  listView.classList.remove("hidden");
+  crumb.innerHTML=`<b>${catName(id)}</b> · ${G.filter(g=>g.cat===id).length} fiches`;
+  renderGuides(G.filter(g=>g.cat===id),"");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function goHome(){
+  current=null;
+  $("#search").value="";
+  hero.classList.remove("hidden");
+  catView.classList.remove("hidden");
+  listView.classList.add("hidden");
+  emptyState.classList.add("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function toggleGuide(head){
+  const item=head.parentElement;
+  item.classList.toggle("open");
+}
+
+function copyCode(btn){
+  const code=btn.closest(".code").querySelector("code").innerText;
+  navigator.clipboard.writeText(code).then(()=>{
+    const old=btn.innerHTML;
+    btn.classList.add("done");
+    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> copié';
+    setTimeout(()=>{btn.classList.remove("done");btn.innerHTML=old;},1500);
+  });
+}
+
+/* ----- recherche ----- */
+function searchGuides(q){
+  q=q.trim().toLowerCase();
+  if(!q){ if(current) openCat(current); else goHome(); return; }
+  hero.classList.add("hidden");
+  catView.classList.add("hidden");
+  listView.classList.remove("hidden");
+  const res=G.filter(g=>{
+    const hay=(g.title+" "+g.summary+" "+g.tags.join(" ")+" "+catName(g.cat)+" "+
+      g.steps.map(s=>s.t+" "+(s.code||"")).join(" ")+" "+(g.note||"")).toLowerCase();
+    return q.split(/\s+/).every(w=>hay.includes(w));
+  });
+  crumb.innerHTML=`Recherche : <b>"${esc(q)}"</b> · ${res.length} résultat${res.length>1?'s':''}`;
+  renderGuides(res,q);
+}
+
+let deb;
+$("#search").addEventListener("input",e=>{
+  clearTimeout(deb);
+  deb=setTimeout(()=>searchGuides(e.target.value),120);
+});
+
+// raccourci "/" pour focus recherche
+document.addEventListener("keydown",e=>{
+  if(e.key==="/"&&document.activeElement!==$("#search")){e.preventDefault();$("#search").focus();}
+  if(e.key==="Escape"){$("#search").blur();}
+});
+
+renderCats();
+</script>
+</body>
+</html>
