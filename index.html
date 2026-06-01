@@ -176,6 +176,7 @@
   .note{margin-top:14px;display:flex;gap:11px;background:rgba(240,176,114,.06);border:1px solid rgba(240,176,114,.22);border-radius:10px;padding:12px 14px;font-size:13.5px;color:#e9d3bb}
   .note svg{flex-shrink:0;width:17px;height:17px;color:var(--amber);margin-top:2px}
   .note b{color:var(--amber)}
+  .note a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;word-break:break-all}
 
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border-soft)}
   .tags .t{font-family:'JetBrains Mono';font-size:11px;color:var(--muted-2);background:var(--panel-2);border:1px solid var(--border);border-radius:30px;padding:3px 10px}
@@ -262,6 +263,7 @@
    DONNÉES
 ============================================================ */
 const CATS = [
+  {id:"intro",   name:"Intro Linux",        desc:"Cours condensé : philosophie UNIX, shell, fichiers, droits et premiers scripts.", icon:"book"},
   {id:"linux",   name:"Système Linux",      desc:"Commandes, services systemd, réseau, pare-feu UFW et stack LAMP.", icon:"terminal"},
   {id:"web",     name:"Serveur Web",        desc:"Apache2, VirtualHosts, résolution de noms et intégration PHP.", icon:"server"},
   {id:"db",      name:"Base de données",    desc:"Installation MySQL, utilisateurs, scripts SQL, PDO et dBeaver.", icon:"database"},
@@ -270,6 +272,7 @@ const CATS = [
   {id:"embedded",name:"M5Stack & ESP32",    desc:"Arduino IDE, capteurs Grove, WiFi et publication MQTT.", icon:"chip"},
   {id:"php",     name:"PHP & Dashboard",    desc:"Bases PHP/HTML, affichage MySQL et supervision temps réel.", icon:"code"},
   {id:"debug",   name:"Dépannage",          desc:"Symptômes courants et leur résolution rapide, du capteur au dashboard.", icon:"life"},
+  {id:"links",   name:"Liens utiles",       desc:"Dépôts du projet : clone direct et commande d'exécution la plus rapide.", icon:"link"},
 ];
 
 const G = [
@@ -1708,6 +1711,141 @@ SELECT user, host FROM mysql.user;
 SHOW GRANTS FOR 'iot_app'@'localhost';`},
 ],note:"« Access denied » : mauvais mot de passe, ou le compte existe pour un autre hôte (ex : '%' au lieu de 'localhost')."},
 
+/* ================= INTRO LINUX (cours condensé) ================= */
+{id:"il1",cat:"intro",title:"GNU/Linux et la philosophie UNIX",badge:"culture",summary:"Ce qu'est Linux et l'esprit qui le guide.",tags:["linux","unix","philosophie","système","culture"],steps:[
+  {t:"Identifier le système.",code:`uname -a          # noyau, version, architecture
+lsb_release -a    # distribution (Ubuntu, Debian…)`},
+  {t:"La philosophie UNIX en une phrase.",code:`# Chaque programme fait UNE chose et la fait bien,
+# communique via des flux de TEXTE,
+# et se combine avec d'autres grâce aux tubes ( | ).`},
+],note:"Sous Linux, <b>tout est fichier</b> : un périphérique, un dossier, un flux… se manipulent comme des fichiers."},
+
+{id:"il2",cat:"intro",title:"Anatomie d'une commande et aide",badge:"bases",summary:"Lire une commande et trouver de l'aide seul.",tags:["commande","man","help","apropos","aide"],steps:[
+  {t:"Structure : commande [options] [arguments].",code:`ls -l /etc        # ls = commande, -l = option, /etc = argument`},
+  {t:"Obtenir de l'aide.",code:`man ls            # manuel complet (q pour quitter)
+ls --help         # aide rapide
+apropos copie     # chercher une commande par mot-clé`},
+],note:"Dans <code>man</code>, tape <b>/motcle</b> pour chercher, <b>n</b> pour l'occurrence suivante."},
+
+{id:"il3",cat:"intro",title:"Le shell Bash au quotidien",badge:"shell",summary:"Complétion, historique et raccourcis qui font gagner du temps.",tags:["bash","shell","historique","tab","raccourcis"],steps:[
+  {t:"Complétion et historique.",code:`# Tab : compléter   |   flèches haut/bas : commandes précédentes
+history           # tout l'historique
+!!                # relance la dernière commande
+# Ctrl+r : rechercher dans l'historique`},
+  {t:"Raccourcis utiles.",code:`# Ctrl+c : interrompre    Ctrl+l : effacer l'écran
+# Ctrl+a : début de ligne  Ctrl+e : fin de ligne`},
+],note:"La complétion par <b>Tab</b> évite les fautes de frappe sur les noms de fichiers et de commandes."},
+
+{id:"il4",cat:"intro",title:"Arborescence et chemins",badge:"système de fichiers",summary:"Une seule racine, et savoir s'y repérer.",tags:["arborescence","chemin","absolu","relatif","racine"],steps:[
+  {t:"Une seule racine : /.",code:`/        racine de tout
+/home    dossiers personnels des utilisateurs
+/etc     fichiers de configuration
+/var     données variables (logs, sites web)`},
+  {t:"Chemin absolu vs relatif.",code:`/var/www/html     # absolu : part de la racine /
+../images         # relatif : .. = dossier parent
+~                 # ton dossier personnel
+.                 # le dossier courant`},
+],note:"Un chemin <b>absolu</b> commence toujours par <code>/</code>. Un chemin <b>relatif</b> dépend de l'endroit où tu te trouves (<code>pwd</code>)."},
+
+{id:"il5",cat:"intro",title:"Se déplacer et lister",badge:"navigation",summary:"pwd, cd, ls : les premiers réflexes.",tags:["pwd","cd","ls","navigation","dossier"],steps:[
+  {t:"Où suis-je, que contient ce dossier ?",code:`pwd               # affiche le dossier courant
+ls -la            # tout, détaillé, y compris les fichiers cachés
+cd /var/log       # se déplacer
+cd                # revenir à ton dossier personnel
+cd -              # revenir au dossier précédent`},
+],note:"<code>ls -la</code> montre aussi les fichiers cachés (qui commencent par <code>.</code>) et les droits de chaque élément."},
+
+{id:"il6",cat:"intro",title:"Créer, copier, déplacer, supprimer",badge:"fichiers",summary:"Manipuler fichiers et dossiers.",tags:["mkdir","touch","cp","mv","rm"],steps:[
+  {t:"Créer.",code:`mkdir projet          # un dossier
+mkdir -p a/b/c        # toute une arborescence d'un coup
+touch fichier.txt     # un fichier vide`},
+  {t:"Copier, renommer/déplacer, supprimer.",code:`cp source.txt copie.txt
+cp -r dossier/ sauvegarde/
+mv ancien.txt nouveau.txt    # renommer OU déplacer
+rm fichier.txt
+rm -r dossier/               # récursif — prudence !`},
+],note:"<code>rm</code> est <b>définitif</b> : pas de corbeille. Vérifie toujours la cible avant un <code>rm -r</code>."},
+
+{id:"il7",cat:"intro",title:"Lire et examiner un fichier texte",badge:"lecture",summary:"Afficher, paginer, suivre un fichier.",tags:["cat","less","head","tail","wc"],steps:[
+  {t:"Afficher le contenu.",code:`cat fichier.txt           # tout d'un coup
+less fichier.txt          # page par page (q pour quitter)
+head -n 20 fichier.txt    # les 20 premières lignes
+tail -f /var/log/syslog   # suivre en DIRECT ce qui s'ajoute`},
+  {t:"Compter.",code:`wc -l fichier.txt         # nombre de lignes`},
+],note:"<code>tail -f</code> est idéal pour observer un log qui s'écrit en temps réel (Apache, MySQL…)."},
+
+{id:"il8",cat:"intro",title:"Éditer un fichier (nano / vim)",badge:"édition",summary:"Modifier un fichier de configuration en console.",tags:["nano","vim","éditeur","config","texte"],steps:[
+  {t:"nano (simple, recommandé au début).",code:`nano fichier.txt
+# Ctrl+O : enregistrer    Ctrl+X : quitter`},
+  {t:"vim (le minimum de survie).",code:`vim fichier.txt
+# i : passer en écriture    Echap : sortir du mode écriture
+# :wq : enregistrer + quitter    :q! : quitter SANS enregistrer`},
+],note:"Bloqué dans vim ? Appuie sur <b>Echap</b> puis tape <b>:q!</b> pour sortir sans rien casser."},
+
+{id:"il9",cat:"intro",title:"Droits et permissions",badge:"droits",summary:"Lire et régler les permissions rwx.",tags:["chmod","chown","droits","permissions","umask"],steps:[
+  {t:"Lire les droits (proprietaire / groupe / autres).",code:`ls -l script.sh
+# -rwxr-xr-- : proprietaire rwx, groupe r-x, autres r--`},
+  {t:"Changer les droits.",code:`chmod 755 script.sh       # rwx r-x r-x
+chmod u+x script.sh       # ajoute l'exécution au proprietaire
+chmod 600 secret.txt      # rw- --- ---`},
+  {t:"Changer le propriétaire.",code:`sudo chown www-data:www-data fichier`},
+],note:"<b>r=4, w=2, x=1</b>, on additionne : 7=rwx, 6=rw-, 5=r-x. <code>umask</code> fixe les droits par défaut des nouveaux fichiers."},
+
+{id:"il10",cat:"intro",title:"Rechercher et filtrer",badge:"recherche",summary:"find, grep et les jokers.",tags:["find","grep","wildcard","joker","recherche"],steps:[
+  {t:"Trouver des fichiers.",code:`find /home -name "*.md"
+find . -type d            # uniquement les dossiers`},
+  {t:"Filtrer du texte et utiliser les jokers.",code:`grep -rn "motif" /etc/
+ls *.txt                  # *  = n'importe quelle suite de caractères
+ls fichier?.txt           # ?  = un seul caractère
+ls [abc]*                 # commence par a, b ou c`},
+],note:"<code>grep -i</code> ignore la casse, <code>-r</code> descend dans les sous-dossiers, <code>-n</code> donne le numéro de ligne."},
+
+{id:"il11",cat:"intro",title:"Flux, redirections et tubes",badge:"flux",summary:"Rediriger des sorties, chaîner des commandes.",tags:["redirection","pipe","tube","tee","flux"],steps:[
+  {t:"Rediriger la sortie.",code:`ls > liste.txt            # écrase le fichier
+ls >> liste.txt           # ajoute à la fin
+commande 2> erreurs.log   # rediriger les erreurs`},
+  {t:"Chaîner avec des tubes et des filtres.",code:`cat /etc/passwd | cut -d: -f1 | sort | uniq
+ps aux | grep apache
+commande | tee sortie.txt   # afficher ET enregistrer`},
+],note:"Le tube <code>|</code> envoie la sortie d'une commande dans l'entrée de la suivante : c'est le cœur de la philosophie UNIX."},
+
+{id:"il12",cat:"intro",title:"Premiers scripts shell",badge:"scripts",summary:"Du shebang à la première boucle.",tags:["bash","script","shebang","variables","boucle"],steps:[
+  {t:"Créer et rendre exécutable.",code:`#!/bin/bash
+echo "Bonjour $1"           # $1 = premier argument passé au script
+# enregistre dans hello.sh puis :
+chmod +x hello.sh
+./hello.sh Marie`},
+  {t:"Variable, test, boucle.",code:`nom="Marie"
+if [ -f config.ini ]; then echo "présent"; fi
+for f in *.txt; do echo "$f"; done`},
+],note:"La 1re ligne <code>#!/bin/bash</code> (le « shebang ») indique l'interpréteur. Sans <code>chmod +x</code>, le script ne s'exécute pas avec <code>./</code>."},
+
+/* ================= LIENS UTILES (dépôts du projet) ================= */
+{id:"ln1",cat:"links",title:"Code M5 et traitement — IoT-room-monitor",badge:"dépôt",summary:"Firmware capteurs M5Stack/ESP32 et traitement des mesures.",tags:["m5stack","esp32","capteurs","clone","github"],steps:[
+  {t:"Cloner le dépôt.",code:`git clone https://github.com/Teo-Gojkovic/IoT-room-monitor.git`},
+  {t:"Utiliser.",code:`cd IoT-room-monitor
+# code embarqué : ouvrir puis téléverser via Arduino IDE ou PlatformIO
+# (sélectionne la carte M5Stack, puis "Téléverser")`},
+],note:"Code <b>embarqué</b> (pas un script shell) : il se téléverse sur la carte. Dépôt : <a href='https://github.com/Teo-Gojkovic/IoT-room-monitor' target='_blank' rel='noopener'>github.com/Teo-Gojkovic/IoT-room-monitor</a>"},
+
+{id:"ln2",cat:"links",title:"Analyse système — script_sysinfo",badge:"dépôt",summary:"Script d'inventaire et de diagnostic de la machine.",tags:["sysinfo","analyse","système","clone","github"],steps:[
+  {t:"Cloner et lancer (le plus rapide).",code:`git clone https://github.com/Teo-Gojkovic/script_sysinfo.git
+cd script_sysinfo && sudo bash *.sh`},
+],note:"Rapport système (CPU, RAM, disque, réseau…). S'il y a plusieurs <code>.sh</code>, lance celui indiqué dans le README. Dépôt : <a href='https://github.com/Teo-Gojkovic/script_sysinfo' target='_blank' rel='noopener'>github.com/Teo-Gojkovic/script_sysinfo</a>"},
+
+{id:"ln3",cat:"links",title:"Analyse BDD / PHP / Apache — Supervision-IoT",badge:"dépôt",summary:"Installation, audit et correction de la pile BDD+PHP.",tags:["bdd","php","apache","mysql","clone","github"],steps:[
+  {t:"Cloner.",code:`git clone https://github.com/MDulche/Supervision-IoT.git && cd Supervision-IoT`},
+  {t:"Installer, auditer ou corriger.",code:`sudo bash 03-install-bdd-php.sh    # installer la pile depuis zéro
+sudo bash 04-audit-bdd-php.sh      # auditer (lecture seule)
+sudo bash 05-fix-bdd-php.sh        # corriger les problèmes détectés`},
+],note:"Dépôt de la partie base de données + PHP. Lien : <a href='https://github.com/MDulche/Supervision-IoT' target='_blank' rel='noopener'>github.com/MDulche/Supervision-IoT</a>"},
+
+{id:"ln4",cat:"links",title:"Boîte à outils — Paul-Tools",badge:"dépôt",summary:"Outils généraux, dont l'analyse Mosquitto / MQTT.",tags:["paul-tools","mosquitto","mqtt","outils","clone","github"],steps:[
+  {t:"Cloner et lancer.",code:`git clone https://github.com/uruzFR/Paul-Tools.git
+cd Paul-Tools && sudo bash *.sh`},
+],note:"Boîte à outils générale incluant l'analyse <b>Mosquitto/MQTT</b>. Adapte le nom du script selon le menu/README. Dépôt : <a href='https://github.com/uruzFR/Paul-Tools' target='_blank' rel='noopener'>github.com/uruzFR/Paul-Tools</a>"},
+
+
 ];
 
 /* ============================================================
@@ -1722,6 +1860,8 @@ const ICONS = {
   chip:'<path d="M4 4h16v16H4z" rx="2"></path><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path><circle cx="12" cy="12" r="3"></circle>',
   code:'<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>',
   life:'<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"></line><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"></line><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"></line><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"></line>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>',
+  link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>',
 };
 function svg(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.code)+'</svg>';}
 
