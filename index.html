@@ -146,6 +146,7 @@
   .guide-item:hover{border-color:var(--accent-dim)}
   .gi-head{display:flex;align-items:center;gap:14px;padding:16px 18px}
   .gi-badge{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent-dim);background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);padding:3px 8px;border-radius:6px;flex-shrink:0}
+  .gi-badge.e5{color:var(--amber);background:rgba(240,176,114,.10);border-color:rgba(240,176,114,.4)}
   .gi-main{flex:1;min-width:0}
   .gi-main h4{font-family:'Bricolage Grotesque';font-weight:600;font-size:15.5px}
   .gi-main p{font-size:13px;color:var(--muted);margin-top:2px}
@@ -326,7 +327,7 @@ journalctl -u apache2 --since "10 min ago"`},
         addresses: [8.8.8.8, 1.1.1.1]`},
   {t:"Appliquer la configuration.",code:`sudo netplan apply
 ip a                    # vérifie la nouvelle IP`},
-],note:"En YAML, <b>l'indentation se fait en espaces</b> (jamais de tabulation), sinon <code>netplan apply</code> renvoie une erreur de parsing."},
+],note:"Sur <b>Ubuntu</b>, le réseau se configure avec <b>Netplan</b> (YAML), pas avec <code>/etc/network/interfaces</code> (ancienne syntaxe Debian). En YAML, <b>l'indentation se fait en espaces</b> (jamais de tabulation), sinon <code>netplan apply</code> renvoie une erreur de parsing."},
 
 {id:"lx4",cat:"linux",title:"Configurer le pare-feu UFW",badge:"sécurité",summary:"Ouvrir uniquement les ports nécessaires (SSH, HTTP, MQTT…).",tags:["ufw","firewall","pare-feu","ports","ssh"],steps:[
   {t:"Toujours autoriser SSH AVANT d'activer (sinon tu te coupes l'accès).",code:`sudo ufw allow 22/tcp           # ou: sudo ufw allow OpenSSH`},
@@ -344,7 +345,9 @@ sudo ufw delete 3`},
   {t:"Mettre à jour les paquets.",code:`sudo apt update && sudo apt upgrade -y`},
   {t:"Installer Apache.",code:`sudo apt install apache2 -y
 sudo systemctl enable --now apache2`},
-  {t:"Installer MySQL (ou MariaDB).",code:`sudo apt install mysql-server -y
+  {t:"Installer MySQL (Ubuntu).",code:`sudo apt install mysql-server -y       # Ubuntu : paquet 'mysql-server'
+# Debian 13 (Trixie) : pas de mysql-server -> MariaDB
+# sudo apt install mariadb-server -y
 sudo mysql_secure_installation`},
   {t:"Installer PHP et le module Apache + MySQL.",code:`sudo apt install php libapache2-mod-php php-mysql -y
 sudo systemctl restart apache2`},
@@ -403,13 +406,19 @@ sudo nano /etc/php/8.x/apache2/php.ini
 
 /* ---------------- DB ---------------- */
 {id:"db1",cat:"db",title:"Installer et sécuriser MySQL",badge:"mysql",summary:"Mettre en place le serveur de base et durcir la configuration.",tags:["mysql","mariadb","install","secure","root"],steps:[
-  {t:"Installer le serveur.",code:`sudo apt install mysql-server -y
-sudo systemctl enable --now mysql`},
-  {t:"Lancer l'assistant de sécurisation.",code:`sudo mysql_secure_installation
-# -> définir un mot de passe root, retirer les comptes anonymes,
-#    interdire le login root distant, supprimer la base de test`},
+  {t:"Installer le serveur (Ubuntu).",code:`sudo apt install mysql-server -y          # Ubuntu
+sudo systemctl enable --now mysql
+# Debian 13 (Trixie) : MariaDB à la place
+# sudo apt install mariadb-server -y && sudo systemctl enable --now mariadb`},
+  {t:"Lancer l'assistant de sécurisation (réponses attendues).",code:`sudo mysql_secure_installation
+# VALIDATE PASSWORD component ...... : n   (ou y pour exiger un mdp fort)
+# New password / Re-enter .......... : <ton mot de passe root>
+# Remove anonymous users? .......... : y
+# Disallow root login remotely? .... : y
+# Remove test database and access? . : y
+# Reload privilege tables now? ..... : y`},
   {t:"Se connecter au shell MySQL.",code:`sudo mysql -u root -p`},
-],note:"Sous Ubuntu récent, le compte root MySQL utilise par défaut l'auth <b>socket</b> : <code>sudo mysql</code> suffit. Crée un utilisateur dédié pour ton application plutôt que d'utiliser root."},
+],note:"<b>Ubuntu</b> : paquet <code>mysql-server</code>. <b>Debian 13 (Trixie)</b> : utiliser <code>mariadb-server</code> (mêmes commandes). Sous Ubuntu récent, le root MySQL utilise l'auth <b>socket</b> : <code>sudo mysql</code> suffit. Crée un utilisateur dédié plutôt que d'utiliser root."},
 
 {id:"db2",cat:"db",title:"Créer des utilisateurs et gérer les droits",badge:"droits",summary:"Compte applicatif avec privilèges limités sur une base précise.",tags:["user","grant","privileges","password","mysql"],steps:[
   {t:"Créer un utilisateur dédié.",code:`CREATE USER 'iot_app'@'localhost' IDENTIFIED BY 'MotDePasseFort!';`},
@@ -422,7 +431,7 @@ FLUSH PRIVILEGES;`},
   {t:"Vérifier les droits d'un utilisateur.",code:`SHOW GRANTS FOR 'iot_app'@'localhost';`},
 ],note:"Le <b>@'localhost'</b> et <b>@'%'</b> font partie de l'identité de l'utilisateur. Un user créé en localhost ne pourra pas se connecter depuis une autre IP."},
 
-{id:"db3",cat:"db",title:"Créer une base depuis un script SQL",badge:"sql",summary:"Importer un schéma et des données via un fichier .sql.",tags:["script","sql","import","create table","source"],steps:[
+{id:"db3",cat:"db",e5:1,title:"Créer une base depuis un script SQL",badge:"sql",summary:"Importer un schéma et des données via un fichier .sql.",tags:["script","sql","import","create table","source"],steps:[
   {t:"Écrire le script (exemple supervision.sql).",code:`CREATE DATABASE IF NOT EXISTS supervision
   CHARACTER SET utf8mb4;
 USE supervision;
@@ -498,7 +507,7 @@ mosquitto_sub -h localhost -t test/topic
 mosquitto_pub -h localhost -t test/topic -m "Hello"`},
 ]},
 
-{id:"mq3",cat:"mqtt",title:"Sécuriser Mosquitto par mot de passe",badge:"sécurité",summary:"Désactiver l'accès anonyme et exiger une authentification.",tags:["mosquitto","password","auth","sécurité","conf"],steps:[
+{id:"mq3",cat:"mqtt",e5:1,title:"Sécuriser Mosquitto par mot de passe",badge:"sécurité",summary:"Désactiver l'accès anonyme et exiger une authentification.",tags:["mosquitto","password","auth","sécurité","conf"],steps:[
   {t:"Créer un fichier de mots de passe.",code:`sudo mosquitto_passwd -c /etc/mosquitto/passwd iot_user
 # (saisir le mot de passe deux fois)`},
   {t:"Créer/éditer la configuration.",code:`sudo nano /etc/mosquitto/conf.d/default.conf`},
@@ -547,7 +556,10 @@ Username / Password : iot_user / monmotdepasse  (si sécurisé)`},
   {t:"Compiler un fichier simple.",code:`g++ main.cpp -o backend
 ./backend`},
   {t:"Compiler plusieurs fichiers (projet POO).",code:`g++ main.cpp Capteur.cpp Mesure.cpp -o backend`},
-  {t:"Avec une bibliothèque externe (ex : mosquitto et mysql).",code:`g++ main.cpp -o backend -lmosquitto -lmysqlclient`},
+  {t:"Avec des bibliothèques externes (mosquitto + MySQL).",code:`# 1) paquets de développement (en-têtes + .so) :
+sudo apt install libmosquitto-dev libmysqlclient-dev -y
+# 2) compilation avec les flags de liaison :
+g++ main.cpp -o backend -lmosquitto -lmysqlclient`},
   {t:"Activer les warnings et le standard C++17.",code:`g++ -std=c++17 -Wall main.cpp -o backend`},
 ],note:"L'option <b>-l</b> (link) ajoute une bibliothèque. Une erreur « undefined reference » signifie généralement qu'il manque un <code>-lxxx</code> à l'édition de liens."},
 
@@ -622,7 +634,7 @@ Cardinalité  : 1 ..... *  (un broker pour plusieurs capteurs)`},
 ],note:"Sur un sujet, on peut te demander de <b>coder une classe à partir de son UML</b> : le <code>-</code> devient <code>private</code>, le <code>+</code> devient <code>public</code>, et les paramètres/types sont donnés directement."},
 
 {id:"cp5",cat:"backend",title:"Client MQTT en C++ (libmosquitto)",badge:"mqtt",summary:"S'abonner à un topic et récupérer les messages côté backend.",tags:["mosquitto","c++","subscribe","callback","backend"],steps:[
-  {t:"Installer la bibliothèque de développement.",code:`sudo apt install libmosquitto-dev -y`},
+  {t:"Installer les bibliothèques de développement.",code:`sudo apt install libmosquitto-dev libmysqlclient-dev -y`},
   {t:"S'abonner et traiter les messages reçus.",code:`#include <mosquitto.h>
 #include <cstring>
 #include <iostream>
@@ -705,7 +717,7 @@ void setup() {
 }`},
 ],note:"Scanner l'adresse I2C avec un sketch « I2C scanner » aide à confirmer que le capteur est bien détecté avant d'écrire le code de lecture."},
 
-{id:"em3",cat:"embedded",title:"Connecter l'ESP32 au WiFi",badge:"wifi",summary:"Rejoindre le point d'accès du réseau de supervision.",tags:["wifi","esp32","wifi.h","connexion","réseau"],steps:[
+{id:"em3",cat:"embedded",e5:1,title:"Connecter l'ESP32 au WiFi",badge:"wifi",summary:"Rejoindre le point d'accès du réseau de supervision.",tags:["wifi","esp32","wifi.h","connexion","réseau"],steps:[
   {t:"Inclure la librairie et définir les identifiants.",code:`#include <WiFi.h>
 const char* ssid     = "MonReseauWiFi";
 const char* password = "MotDePasseWiFi";`},
@@ -717,6 +729,10 @@ const char* password = "MotDePasseWiFi";`},
   }
   Serial.println("\\nConnecté ! IP : " + WiFi.localIP().toString());
 }`},
+  {t:"Tester l'accès au broker depuis le M5Stack.",code:`// une fois le WiFi connecté :
+client.setServer("192.168.1.50", 1883);   // IP FIXE du broker
+if (client.connect("m5-salle1")) Serial.println("Broker OK");
+else Serial.println("Echec - verifier IP / port 1883 / pare-feu");`},
 ],note:"L'ESP32 ne gère que le <b>WiFi 2,4 GHz</b>. S'il ne se connecte pas, vérifie que le point d'accès n'est pas en 5 GHz uniquement et que le SSID/mot de passe sont exacts."},
 
 {id:"em4",cat:"embedded",title:"Publier des données en MQTT depuis le M5Stack",badge:"mqtt",summary:"Envoyer les mesures du capteur vers le broker Mosquitto.",tags:["pubsubclient","mqtt","publish","esp32","broker"],steps:[
@@ -1529,12 +1545,33 @@ $capteur = htmlspecialchars(trim($_POST['capteur'] ?? ''));
 echo "Reçu : " . $capteur;`},
 ],note:"Ne fais <b>jamais</b> confiance aux données reçues : filtre/valide <code>$_POST</code> et <code>$_GET</code> avant usage."},
 
-{id:"ph6",cat:"php",title:"Sessions et page protégée",badge:"session",lang:"php",summary:"Authentification simple par session.",tags:["session","login","authentification","header","php"],steps:[
-  {t:"Connexion.",code:`<?php session_start();
-$_SESSION['user'] = 'admin';`},
-  {t:"Protéger une page.",code:`<?php session_start();
-if (!isset($_SESSION['user'])) { header('Location: login.php'); exit; }`},
-],note:"<code>session_start()</code> doit précéder tout affichage HTML. Pour déconnecter : <code>session_destroy()</code>."},
+{id:"ph6",cat:"php",e5:1,title:"Sessions et page protégée",badge:"session",lang:"php",summary:"Login par formulaire, vérification PDO et protection par session.",tags:["session","login","authentification","pdo","password","php"],steps:[
+  {t:"Formulaire de connexion (login.php).",code:`<form method="post" action="auth.php">
+  <input type="text" name="user" placeholder="Utilisateur">
+  <input type="password" name="pass" placeholder="Mot de passe">
+  <button type="submit">Connexion</button>
+</form>`},
+  {t:"Vérifier les identifiants (auth.php).",code:`<?php
+session_start();
+require 'config.php';
+$st = $pdo->prepare("SELECT mdp FROM utilisateurs WHERE login = ?");
+$st->execute([$_POST['user']]);
+$row = $st->fetch();
+if ($row && password_verify($_POST['pass'], $row['mdp'])) {
+    $_SESSION['user'] = $_POST['user'];
+    header('Location: index.php');
+} else {
+    echo 'Identifiants invalides';
+}`},
+  {t:"Protéger une page réservée.",code:`<?php
+session_start();
+if (!isset($_SESSION['user'])) { header('Location: login.php'); exit; }
+// ... contenu visible uniquement si connecté ...`},
+  {t:"Se déconnecter (logout.php).",code:`<?php
+session_start();
+session_destroy();
+header('Location: login.php');`},
+],note:"Stocke les mots de passe <b>hachés</b> : <code>password_hash()</code> à l'inscription, <code>password_verify()</code> à la connexion — jamais en clair. <code>session_start()</code> doit précéder toute sortie HTML."},
 
 {id:"ph7",cat:"php",title:"Réutiliser du code (include / require)",badge:"include",lang:"php",summary:"En-tête, pied de page, config partagés.",tags:["include","require","header","config","php"],steps:[
   {t:"Réutiliser.",code:`<?php include 'header.php'; ?>
@@ -1928,7 +1965,66 @@ sudo dd if=ubuntu-24.04.iso of=/dev/sdb bs=4M status=progress oflag=sync`},
 # compare le résultat avec le fichier SHA256SUMS fourni sur la page de téléchargement`},
 ],note:"Vérifier le <b>SHA256</b> garantit que l'ISO n'a pas été corrompue (téléchargement) ni altérée avant l'installation."},
 
+/* ================= AJOUTS E5 ================= */
 
+{id:"cp19",cat:"backend",e5:1,title:"Diagramme de classe UML (backend)",badge:"uml",summary:"Les classes attendues et leurs relations.",tags:["uml","classe","poo","association","composition","e5"],steps:[
+  {t:"Les trois classes minimales.",code:`+---------------------+      +---------------------+      +---------------------+
+|       Capteur       |      |     BrokerMQTT      |      |      Database       |
++---------------------+      +---------------------+      +---------------------+
+| - id : string       |      | - hote : string     |      | - hote : string     |
+| - type : string     |      | - port : int        |      | - user : string     |
+| - valeur : float    |      +---------------------+      | - pass : string     |
++---------------------+      | + connecter()       |      +---------------------+
+| + lire() : float    |      | + sabonner(topic)   |      | + connecter()       |
+| + getType():string  |      | + onMessage()       |      | + inserer(Capteur)  |
++---------------------+      +---------------------+      +---------------------+`},
+  {t:"Les relations.",code:`BrokerMQTT  <>------  Capteur     // COMPOSITION : le broker crée/possède les Capteur
+BrokerMQTT  ------->  Database    // ASSOCIATION : le broker utilise la base
+// <>------  losange plein = composition (le tout possede les parties)
+// ------->  fleche simple  = association (une classe en utilise une autre)`},
+],note:"Logique : <b>BrokerMQTT</b> reçoit un message, construit un objet <b>Capteur</b> (composition), puis le passe à <b>Database</b> (association) pour l'<code>INSERT</code>. Adapte les noms à ton projet."},
+
+{id:"cp20",cat:"backend",e5:1,title:"Makefile minimal commenté",badge:"make",summary:"La forme simple attendue à l'épreuve.",tags:["makefile","make","compilation","e5","backend"],steps:[
+  {t:"Makefile (les commandes commencent par une TABULATION).",code:`all: backend
+
+backend: main.cpp
+	g++ main.cpp -o backend -lmosquitto -lmysqlclient
+
+clean:
+	rm -f backend`},
+  {t:"Utiliser.",code:`make         # compile (cible 'all' -> backend)
+make clean   # supprime l'exécutable`},
+],note:"Les lignes sous une cible débutent par une <b>tabulation</b> (jamais des espaces), sinon « missing separator ». Version complète (objets, règle %.o) : voir « Automatiser la compilation avec un Makefile »."},
+
+{id:"dg28",cat:"debug",e5:1,title:"Test de bout en bout (checklist)",badge:"validation",summary:"Vérifier toute la chaîne capteur → dashboard.",tags:["test","validation","e5","checklist","bout-en-bout"],steps:[
+  {t:"1. Le capteur publie.",code:`mosquitto_sub -h localhost -t "salle1/#" -v
+# on doit voir arriver les messages du M5Stack`},
+  {t:"2. Le backend reçoit.",code:`./backend
+# le stdout (ou les logs) doit afficher les valeurs reçues`},
+  {t:"3. L'insertion en base se fait.",code:`sudo mysql -e "SELECT * FROM supervision.mesures ORDER BY id DESC LIMIT 5;"`},
+  {t:"4. Le dashboard affiche.",code:`curl -s http://www.dashboard.local | head
+# ou ouvrir la page dans un navigateur`},
+],note:"On teste dans l'ordre : si une étape casse, le problème se situe entre la dernière étape OK et celle-ci. C'est le contrôle de référence pour l'oral E5."},
+
+{id:"lx34",cat:"linux",title:"Configurer le réseau avec /etc/network/interfaces (Debian)",badge:"réseau",summary:"Méthode classique Debian/ifupdown, alternative à Netplan.",tags:["interfaces","ifupdown","debian","réseau","statique","ip"],steps:[
+  {t:"Sur Debian sans Netplan : s'assurer d'avoir ifupdown.",code:`sudo apt install ifupdown      # fournit ifup / ifdown
+ip a                           # repérer l'interface (ens33, eth0, enp0s3...)`},
+  {t:"Éditer le fichier.",code:`sudo nano /etc/network/interfaces`},
+  {t:"IP fixe (statique).",code:`auto lo
+iface lo inet loopback
+
+auto ens33
+iface ens33 inet static
+    address 192.168.1.50/24
+    gateway 192.168.1.1
+    dns-nameservers 8.8.8.8 1.1.1.1`},
+  {t:"Ou en DHCP (adresse automatique).",code:`auto ens33
+iface ens33 inet dhcp`},
+  {t:"Appliquer la configuration.",code:`sudo systemctl restart networking
+# ou interface par interface :
+sudo ifdown ens33 && sudo ifup ens33
+ip a                           # vérifier la nouvelle IP`},
+],note:"C'est la méthode <b>Debian / ifupdown</b>. Sur <b>Ubuntu</b>, le réseau passe par <b>Netplan</b> (voir « Configurer le réseau (IP fixe) ») : ne mélange pas les deux sur la même interface. Sous la ligne <code>iface</code>, indente les options avec des espaces."},
 
 ];
 
@@ -2025,7 +2121,7 @@ function guideHTML(g,q){
 
   return `<div class="guide-item" data-id="${g.id}">
     <div class="gi-head" onclick="toggleGuide(this)">
-      <span class="gi-badge">${g.badge}</span>
+      ${g.e5?'<span class="gi-badge e5">requis E5</span>':''}<span class="gi-badge">${g.badge}</span>
       <div class="gi-main"><h4>${hl(esc(g.title),q)}</h4><p>${hl(esc(g.summary),q)}</p></div>
       <svg class="gi-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </div>
