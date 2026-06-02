@@ -146,7 +146,6 @@
   .guide-item:hover{border-color:var(--accent-dim)}
   .gi-head{display:flex;align-items:center;gap:14px;padding:16px 18px}
   .gi-badge{font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent-dim);background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2);padding:3px 8px;border-radius:6px;flex-shrink:0}
-  .gi-badge.e5{color:var(--amber);background:rgba(240,176,114,.10);border-color:rgba(240,176,114,.4)}
   .gi-main{flex:1;min-width:0}
   .gi-main h4{font-family:'Bricolage Grotesque';font-weight:600;font-size:15.5px}
   .gi-main p{font-size:13px;color:var(--muted);margin-top:2px}
@@ -431,7 +430,7 @@ FLUSH PRIVILEGES;`},
   {t:"Vérifier les droits d'un utilisateur.",code:`SHOW GRANTS FOR 'iot_app'@'localhost';`},
 ],note:"Le <b>@'localhost'</b> et <b>@'%'</b> font partie de l'identité de l'utilisateur. Un user créé en localhost ne pourra pas se connecter depuis une autre IP."},
 
-{id:"db3",cat:"db",e5:1,title:"Créer une base depuis un script SQL",badge:"sql",summary:"Importer un schéma et des données via un fichier .sql.",tags:["script","sql","import","create table","source"],steps:[
+{id:"db3",cat:"db",title:"Créer une base depuis un script SQL",badge:"sql",summary:"Importer un schéma et des données via un fichier .sql.",tags:["script","sql","import","create table","source"],steps:[
   {t:"Écrire le script (exemple supervision.sql).",code:`CREATE DATABASE IF NOT EXISTS supervision
   CHARACTER SET utf8mb4;
 USE supervision;
@@ -507,7 +506,7 @@ mosquitto_sub -h localhost -t test/topic
 mosquitto_pub -h localhost -t test/topic -m "Hello"`},
 ]},
 
-{id:"mq3",cat:"mqtt",e5:1,title:"Sécuriser Mosquitto par mot de passe",badge:"sécurité",summary:"Désactiver l'accès anonyme et exiger une authentification.",tags:["mosquitto","password","auth","sécurité","conf"],steps:[
+{id:"mq3",cat:"mqtt",title:"Sécuriser Mosquitto par mot de passe",badge:"sécurité",summary:"Désactiver l'accès anonyme et exiger une authentification.",tags:["mosquitto","password","auth","sécurité","conf"],steps:[
   {t:"Créer un fichier de mots de passe.",code:`sudo mosquitto_passwd -c /etc/mosquitto/passwd iot_user
 # (saisir le mot de passe deux fois)`},
   {t:"Créer/éditer la configuration.",code:`sudo nano /etc/mosquitto/conf.d/default.conf`},
@@ -717,7 +716,7 @@ void setup() {
 }`},
 ],note:"Scanner l'adresse I2C avec un sketch « I2C scanner » aide à confirmer que le capteur est bien détecté avant d'écrire le code de lecture."},
 
-{id:"em3",cat:"embedded",e5:1,title:"Connecter l'ESP32 au WiFi",badge:"wifi",summary:"Rejoindre le point d'accès du réseau de supervision.",tags:["wifi","esp32","wifi.h","connexion","réseau"],steps:[
+{id:"em3",cat:"embedded",title:"Connecter l'ESP32 au WiFi",badge:"wifi",summary:"Rejoindre le point d'accès du réseau de supervision.",tags:["wifi","esp32","wifi.h","connexion","réseau"],steps:[
   {t:"Inclure la librairie et définir les identifiants.",code:`#include <WiFi.h>
 const char* ssid     = "MonReseauWiFi";
 const char* password = "MotDePasseWiFi";`},
@@ -1545,7 +1544,7 @@ $capteur = htmlspecialchars(trim($_POST['capteur'] ?? ''));
 echo "Reçu : " . $capteur;`},
 ],note:"Ne fais <b>jamais</b> confiance aux données reçues : filtre/valide <code>$_POST</code> et <code>$_GET</code> avant usage."},
 
-{id:"ph6",cat:"php",e5:1,title:"Sessions et page protégée",badge:"session",lang:"php",summary:"Login par formulaire, vérification PDO et protection par session.",tags:["session","login","authentification","pdo","password","php"],steps:[
+{id:"ph6",cat:"php",title:"Sessions et page protégée",badge:"session",lang:"php",summary:"Login par formulaire, vérification PDO et protection par session.",tags:["session","login","authentification","pdo","password","php"],steps:[
   {t:"Formulaire de connexion (login.php).",code:`<form method="post" action="auth.php">
   <input type="text" name="user" placeholder="Utilisateur">
   <input type="password" name="pass" placeholder="Mot de passe">
@@ -1965,9 +1964,9 @@ sudo dd if=ubuntu-24.04.iso of=/dev/sdb bs=4M status=progress oflag=sync`},
 # compare le résultat avec le fichier SHA256SUMS fourni sur la page de téléchargement`},
 ],note:"Vérifier le <b>SHA256</b> garantit que l'ISO n'a pas été corrompue (téléchargement) ni altérée avant l'installation."},
 
-/* ================= AJOUTS E5 ================= */
+/* ================= FICHES SUPPLÉMENTAIRES ================= */
 
-{id:"cp19",cat:"backend",e5:1,title:"Diagramme de classe UML (backend)",badge:"uml",summary:"Les classes attendues et leurs relations.",tags:["uml","classe","poo","association","composition","e5"],steps:[
+{id:"cp19",cat:"backend",title:"Diagramme de classe UML (backend)",badge:"uml",summary:"Les classes attendues et leurs relations.",tags:["uml","classe","poo","association","composition"],steps:[
   {t:"Les trois classes minimales.",code:`+---------------------+      +---------------------+      +---------------------+
 |       Capteur       |      |     BrokerMQTT      |      |      Database       |
 +---------------------+      +---------------------+      +---------------------+
@@ -1984,7 +1983,7 @@ BrokerMQTT  ------->  Database    // ASSOCIATION : le broker utilise la base
 // ------->  fleche simple  = association (une classe en utilise une autre)`},
 ],note:"Logique : <b>BrokerMQTT</b> reçoit un message, construit un objet <b>Capteur</b> (composition), puis le passe à <b>Database</b> (association) pour l'<code>INSERT</code>. Adapte les noms à ton projet."},
 
-{id:"cp20",cat:"backend",e5:1,title:"Makefile minimal commenté",badge:"make",summary:"La forme simple attendue à l'épreuve.",tags:["makefile","make","compilation","e5","backend"],steps:[
+{id:"cp20",cat:"backend",title:"Makefile minimal commenté",badge:"make",summary:"La forme simple attendue à l'épreuve.",tags:["makefile","make","compilation","backend"],steps:[
   {t:"Makefile (les commandes commencent par une TABULATION).",code:`all: backend
 
 backend: main.cpp
@@ -1996,7 +1995,7 @@ clean:
 make clean   # supprime l'exécutable`},
 ],note:"Les lignes sous une cible débutent par une <b>tabulation</b> (jamais des espaces), sinon « missing separator ». Version complète (objets, règle %.o) : voir « Automatiser la compilation avec un Makefile »."},
 
-{id:"dg28",cat:"debug",e5:1,title:"Test de bout en bout (checklist)",badge:"validation",summary:"Vérifier toute la chaîne capteur → dashboard.",tags:["test","validation","e5","checklist","bout-en-bout"],steps:[
+{id:"dg28",cat:"debug",title:"Test de bout en bout (checklist)",badge:"validation",summary:"Vérifier toute la chaîne capteur → dashboard.",tags:["test","validation","checklist","bout-en-bout"],steps:[
   {t:"1. Le capteur publie.",code:`mosquitto_sub -h localhost -t "salle1/#" -v
 # on doit voir arriver les messages du M5Stack`},
   {t:"2. Le backend reçoit.",code:`./backend
@@ -2121,7 +2120,7 @@ function guideHTML(g,q){
 
   return `<div class="guide-item" data-id="${g.id}">
     <div class="gi-head" onclick="toggleGuide(this)">
-      ${g.e5?'<span class="gi-badge e5">requis E5</span>':''}<span class="gi-badge">${g.badge}</span>
+      <span class="gi-badge">${g.badge}</span>
       <div class="gi-main"><h4>${hl(esc(g.title),q)}</h4><p>${hl(esc(g.summary),q)}</p></div>
       <svg class="gi-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
     </div>
